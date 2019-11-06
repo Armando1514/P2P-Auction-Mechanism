@@ -1,4 +1,5 @@
-import java.io.IOException;
+package publishsubscribe.chat;
+
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -14,6 +15,8 @@ import net.tomp2p.peers.Number160;
 import net.tomp2p.peers.PeerAddress;
 import net.tomp2p.rpc.ObjectDataReply;
 import net.tomp2p.storage.Data;
+import publishsubscribe.chat.MessageListener;
+import publishsubscribe.chat.PublishSubscribe;
 
 public class PublishSubscribeCore implements PublishSubscribe {
 

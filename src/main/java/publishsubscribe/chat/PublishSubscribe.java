@@ -1,3 +1,5 @@
+package publishsubscribe.chat;
+
 public interface PublishSubscribe {
 
     public boolean createTopic(String _topic_name);

@@ -1,3 +1,4 @@
+package publishsubscribe.chat;
 
 import org.beryx.textio.TextIO;
 import org.beryx.textio.TextIoFactory;
@@ -6,7 +7,8 @@ import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 
-public class ConsoleControl {
+
+public class ConsoleControlChat {
 
     @Option(name="-m", aliases="--masterip", usage="the master peer ip address", required=true)
     private static String master;
@@ -33,7 +35,7 @@ public class ConsoleControl {
 
         }
 
-        ConsoleControl console = new ConsoleControl();
+        ConsoleControlChat console = new ConsoleControlChat();
         final CmdLineParser parser = new CmdLineParser(console);
         try {
             parser.parseArgument(args);
@@ -127,7 +129,5 @@ public class ConsoleControl {
         terminal.printf("\n5 - EXIT\n");
 
     }
-
-
 
 }
