@@ -4,8 +4,8 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>P2P-publish-subscribe-project</groupId>
-    <artifactId>P2P-publish-subscribe</artifactId>
+    <groupId>P2P-auction</groupId>
+    <artifactId>P2P-auction-system</artifactId>
     <version>1.0-SNAPSHOT</version>
     <repositories>
         <repository>
@@ -13,7 +13,6 @@
             <url>http://tomp2p.net/dev/mvn/</url>
         </repository>
     </repositories>
-
     <dependencies>
 
         <dependency>
@@ -58,6 +57,14 @@
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>6</source>
+                    <target>6</target>
+                </configuration>
             </plugin>
         </plugins>
     </build>
