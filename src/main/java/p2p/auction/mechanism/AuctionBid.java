@@ -16,10 +16,15 @@ public class AuctionBid implements Serializable {
 
     public boolean isSmallerThan(AuctionBid auctionBid)
     {
-        if(this.getBidValue() < auctionBid.getBidValue())
+        if(this.getBidValue() < auctionBid.getBidValue()) {
+            System.out.println("true: "+ this.getBidValue()+ "  <  " + auctionBid.getBidValue());
             return true;
-        else
+        }
+        else {
+            System.out.println("false: "+ this.getBidValue()+ "  <  " + auctionBid.getBidValue());
+
             return false;
+        }
     }
 
 

@@ -25,7 +25,12 @@ public class Auction implements Serializable {
     }
 
     public AuctionUser getOwner() {
-        return owner;
+        return this.owner;
+    }
+
+    public Auction setOwner(AuctionUser owner) {
+        this.owner = owner;
+        return this;
     }
 
     public void setNickname(AuctionUser owner) {
@@ -33,7 +38,7 @@ public class Auction implements Serializable {
     }
 
     public String getAuctionName() {
-        return auctionName;
+        return this.auctionName;
     }
 
     public void setAuctionName(String auctionName) {
@@ -41,7 +46,7 @@ public class Auction implements Serializable {
     }
 
     public HashSet<PeerAddress> getParticipants() {
-        return participants;
+        return this.participants;
     }
 
     public void setParticipants(HashSet<PeerAddress> participants) {
@@ -49,7 +54,7 @@ public class Auction implements Serializable {
     }
 
     public Date getExpirationDate() {
-        return expirationDate;
+        return this.expirationDate;
     }
 
     public void setExpirationDate(Date expirationDate) {

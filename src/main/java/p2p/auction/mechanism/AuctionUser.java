@@ -43,11 +43,12 @@ public class AuctionUser implements Serializable {
     }
 
     public String getNickname() {
-        return nickname;
+        return this.nickname;
     }
 
-    public void setNickname(String nickname) {
+    public AuctionUser setNickname(String nickname) {
         this.nickname = nickname;
+        return this;
     }
 
     public String getMyAuctions() {

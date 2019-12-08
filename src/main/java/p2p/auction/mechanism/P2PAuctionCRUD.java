@@ -81,63 +81,52 @@ public class P2PAuctionCRUD {
     private static final Random RND = new Random(42L);
 
 
-    protected void store(Auction auction, AuctionBid newBid) throws Exception {
+    /* Update the auction's values in an async p2p system, maintaining the consistency */
+    protected void update(Auction auction, AuctionBid newBid) throws Exception {
         Pair<Number640, Byte> pair2 = null;
-
+        Pair<Number160, Data> pair = null;
         for(int i=0; i < 5; i++)
         {
-            Pair<Number160, Data> pair = getAndUpdate(peerDHT, auction, newBid);
+             pair = getAndUpdate(peerDHT, auction, newBid);
+
             if (pair == null) {
-                throw new BidException("Failure, wait some time, first to make another bid.");
+                throw new BidException("we cannot handle this kind of inconsistency. Wait and retry after several minutes");
             }
+            FuturePut fp = peerDHT
+                    .put(Number160.createHash(auction.getAuctionName()))
+                    .data( pair.element1().prepareFlag(),
+                            pair.element0()).start().awaitUninterruptibly();
 
-            /*
-            put prepared with data and short TTL,
-            if status is OK on all replica peers, go ahead,
-            otherwise, remove the data and go to step
-             */
-            FuturePut fp = peerDHT.put(Number160.createHash(auction.getAuctionName())).data(Number160.createHash(auction.getAuctionName()), pair.element1().prepareFlag(),
-                    pair.element0()).start().awaitUninterruptibly();
             pair2 = checkVersions(fp.rawResult());
-            if(pair2 != null && pair2.element1() == 1)
-            {
-                FutureGet futureGet = peerDHT.get(Number160.createHash("Nino")).start();
-                futureGet.awaitUninterruptibly();
-                if (futureGet.isSuccess()) {
-
-                    System.out.println(((Auction) futureGet.data().object()).getSlots().get(0).getBidValue());
-                }
+            // 1 is PutStatus.OK_PREPARED
+            if (pair2 != null && pair2.element1() == 1) {
                 break;
             }
-            // if not remove.
-            peerDHT.remove(Number160.createHash(auction.getAuctionName())).versionKey(pair.element0()).start().awaitUninterruptibly();
+
+            System.out.println("remove");
+            // if not removed, a low ttl will eventually get rid of it
+            peerDHT.remove(Number160.createHash(auction.getAuctionName())).versionKey(pair.element0()).start()
+                    .awaitUninterruptibly();
             Thread.sleep(RND.nextInt(500));
-        }
-        if(pair2 != null && pair2.element1()==1)
-        {
-            // put confirm, send the data.
-            FuturePut fp = peerDHT.put(Number160.createHash(auction.getAuctionName())).versionKey(pair2.element0().versionKey()).putConfirm().data(new Data())
-                    .start().awaitUninterruptibly();
-            FutureGet futureGet = peerDHT.get(Number160.createHash("Nino")).start();
-            futureGet.awaitUninterruptibly();
-            if (futureGet.isSuccess()) {
-
-                System.out.println(((Auction) futureGet.data().object()).getSlots().get(0).getBidValue());
             }
+            if (pair2 != null && pair2.element1() == 1) {
 
-        } else {
-            throw new BidException("Failure, wait some time, first to make another bid.");
-        }
+                FuturePut fp ;
+                         fp = peerDHT.put(Number160.createHash(auction.getAuctionName()))
+                        .versionKey(pair2.element0().versionKey()).putConfirm()
+                        .data(new Data()).start().awaitUninterruptibly();
+
+            } else {
+                throw new BidException("we cannot handle this kind of inconsistency. Wait and retry after several minutes");
+            }
 
     }
 
-
     /*
-     Step 1.
-     get latest version, check if all replica peers have latest version,
-     if not wait and try again, when you have the latest version do modification.
-     In this case, write the new bind and assign the slot to the user.
-     */
+       get latest version, check if all replica peers have latest version,
+       if not wait and try again, when you have the latest version do modification.
+       In this case, write the new bind and assign the slot to the user.
+       */
     private static Pair<Number160, Data> getAndUpdate(PeerDHT peerDHT,
                                                       Auction auction, AuctionBid newBid) throws BidException, InterruptedException, ClassNotFoundException,
             IOException {
@@ -164,13 +153,13 @@ public class P2PAuctionCRUD {
         {
             int size ;
             Auction lastAuction = (Auction) pair.element1().object();
-            AuctionBid lastBid;
+            AuctionBid lastBid = null;
             //get the last Bid
             if((lastAuction.getSlots().size() - 1) > 0) {
                 size = lastAuction.getSlots().size() - 1;
-                 lastBid = lastAuction.getSlots().get(size);
-                 //if the new bid's value, is less than the last one, the flag is false, and throw an exception.
-               checkValue = lastBid.isSmallerThan(newBid);
+                lastBid = lastAuction.getSlots().get(size);
+                //if the new bid's value, is less than the last one, the flag is false, and throw an exception.
+                checkValue = lastBid.isSmallerThan(newBid);
             }
 
             else{
@@ -195,11 +184,12 @@ public class P2PAuctionCRUD {
             else
             {
                 //does it means that our bid is lower than the last bid, so we need to make another bid.
-                throw new BidException("Your bid is lower than the last one, update the auction status.");
+                throw new BidException("Your bid:"+ newBid.getBidValue()+" is lower than the last one:"+ lastBid.getBidValue() + ", update the auction status.");
             }
         }
         return null;
     }
+
 
     private static <K> Pair<Number640, K> checkVersions(Map<PeerAddress, Map<Number640, K>> rawData)
     {

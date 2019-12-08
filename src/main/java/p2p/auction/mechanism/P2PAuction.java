@@ -86,7 +86,7 @@ public class P2PAuction  extends P2PAuctionCRUD implements P2PAuctionAPI {
                 //let's create the bid
                 AuctionBid newBid = new AuctionBid(auction, user, bid_amount);
                 //put our peer address in the topic
-                super.store(auction, newBid);
+                super.update(auction, newBid);
                 return "ok";
             }
         } catch (Exception e) {
@@ -97,7 +97,7 @@ public class P2PAuction  extends P2PAuctionCRUD implements P2PAuctionAPI {
 
     public Auction getElement(String auction_name) throws Exception
     {
-        FutureGet futureGet = super.getPeerDHT().get(Number160.createHash(auction_name)).start();
+        FutureGet futureGet = super.getPeerDHT().get(Number160.createHash(auction_name)).getLatest().start();
         futureGet.awaitUninterruptibly();
         if (futureGet.isSuccess()) {
             //auction not found
