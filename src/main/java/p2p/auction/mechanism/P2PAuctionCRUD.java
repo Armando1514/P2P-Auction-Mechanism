@@ -81,8 +81,23 @@ public class P2PAuctionCRUD {
     private static final Random RND = new Random(42L);
 
 
+    /* Read operation */
+    protected Auction read(String auction_name) throws Exception {
+
+        FutureGet futureGet = this.peerDHT.get(Number160.createHash(auction_name)).getLatest().start();
+        futureGet.awaitUninterruptibly();
+        if (futureGet.isSuccess()) {
+            //auction not found
+            if (futureGet.isEmpty())
+                return null;
+            return (Auction) futureGet.data().object();
+        }
+        return null;
+    }
+
+
     /* Update the auction's values in an async p2p system, maintaining the consistency */
-    protected void update(Auction auction, AuctionBid newBid) throws Exception {
+    protected void createAndUpdate(Auction auction, AuctionBid newBid) throws Exception {
         Pair<Number640, Byte> pair2 = null;
         Pair<Number160, Data> pair = null;
         for(int i=0; i < 5; i++)
@@ -100,10 +115,27 @@ public class P2PAuctionCRUD {
             pair2 = checkVersions(fp.rawResult());
             // 1 is PutStatus.OK_PREPARED
             if (pair2 != null && pair2.element1() == 1) {
+                Auction lastAuction = (Auction) pair.element1().object();
+
+                //get the last Bid
+                if((lastAuction.getSlots().size() - 1) > 0) {
+                    int size;
+                    size = lastAuction.getSlots().size() - 1;
+
+                    // check if the bid that i'm going to put, is bigger that the last bid inserted.
+                    AuctionBid lastBid = lastAuction.getSlots().get(size-1);
+                    // if is lower, remove it.
+                    if (!lastBid.isSmallerThan(newBid)) {
+                        peerDHT.remove(Number160.createHash(auction.getAuctionName())).versionKey(pair.element0()).start()
+                                .awaitUninterruptibly();
+                        throw new BidException("Your bid: " + newBid.getBidValue() + " is lower than the last one: " + lastBid.getBidValue() + ", update the auction status.");
+                    }
+                }
+
                 break;
             }
 
-            System.out.println("remove");
+
             // if not removed, a low ttl will eventually get rid of it
             peerDHT.remove(Number160.createHash(auction.getAuctionName())).versionKey(pair.element0()).start()
                     .awaitUninterruptibly();
@@ -184,7 +216,7 @@ public class P2PAuctionCRUD {
             else
             {
                 //does it means that our bid is lower than the last bid, so we need to make another bid.
-                throw new BidException("Your bid:"+ newBid.getBidValue()+" is lower than the last one:"+ lastBid.getBidValue() + ", update the auction status.");
+                throw new BidException("Your bid: "+ newBid.getBidValue()+" is lower than the last one: "+ lastBid.getBidValue() + ", update the auction status.");
             }
         }
         return null;

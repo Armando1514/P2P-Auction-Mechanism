@@ -27,7 +27,7 @@ public interface P2PAuctionAPI {
      *
      * @param auction_name a String, the name of the auction.
      * @param bid_amount   a double value, the bid for an auction.
-     * @return a String value that is the status of the auction.
+     * @return Auction, object representing the status of the auction.
      */
-    public String placeAbid(String auction_name, double bid_amount);
+    public Auction placeABid(String auction_name, double bid_amount);
 }

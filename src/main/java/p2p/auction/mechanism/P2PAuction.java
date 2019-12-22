@@ -71,41 +71,36 @@ public class P2PAuction  extends P2PAuctionCRUD implements P2PAuctionAPI {
      *
      * @param auction_name a String, the name of the auction.
      * @param bid_amount   a double value, the bid for an auction.
-     * @return a String value that is the status of the auction.
+     * @return Auction, object representing the status of the auction.
      */
-    public String placeAbid(String auction_name, double bid_amount) {
+    public Auction placeABid(String auction_name, double bid_amount) {
         try {
-            FutureGet futureGet = super.getPeerDHT().get(Number160.createHash(auction_name)).start();
-            futureGet.awaitUninterruptibly();
-            if (futureGet.isSuccess()) {
-                //auction not found
-                if (futureGet.isEmpty())
+                Auction auction = super.read(auction_name);
+
+                if(auction == null)
                     return null;
-                Auction auction = (Auction)futureGet.data().object();
+
+                //remember to change
                 AuctionUser user = new AuctionUser("test","password", bid_amount, null, null);
+
                 //let's create the bid
                 AuctionBid newBid = new AuctionBid(auction, user, bid_amount);
+
                 //put our peer address in the topic
-                super.update(auction, newBid);
-                return "ok";
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
+
+                super.createAndUpdate(auction, newBid);
+
+                return super.read(auction_name);
         }
-        return null;
+         catch (Exception e) {
+            e.printStackTrace();
+             return null;
+
+         }
     }
 
-    public Auction getElement(String auction_name) throws Exception
+    public Auction getAuction(String auction_name) throws Exception
     {
-        FutureGet futureGet = super.getPeerDHT().get(Number160.createHash(auction_name)).getLatest().start();
-        futureGet.awaitUninterruptibly();
-        if (futureGet.isSuccess()) {
-            //auction not found
-            if (futureGet.isEmpty())
-                return null;
-
-            return (Auction) futureGet.data().object();
-        }
-        else return null;
+    return super.read(auction_name);
     }
 }

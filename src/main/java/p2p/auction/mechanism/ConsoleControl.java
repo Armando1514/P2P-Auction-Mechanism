@@ -70,7 +70,7 @@ public class ConsoleControl {
                         String sname = textIO.newStringInputReader()
                                 .withDefaultValue("default-topic")
                                 .read("Name:");
-                        peer.placeAbid(sname, 3);
+                        peer.placeABid(sname, 3);
                     terminal.printf("\n SUCCESSFULLY SUBSCRIBED TO %s\n", sname);
                         break;
 
