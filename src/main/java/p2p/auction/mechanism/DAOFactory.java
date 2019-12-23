@@ -1,7 +1,8 @@
 package p2p.auction.mechanism;
+
 import java.util.Date;
 
-public interface P2PAuctionAPI {
+public interface DAOFactory {
 
     /**
      * Creates a new auction for a good.
@@ -12,7 +13,7 @@ public interface P2PAuctionAPI {
      * @param description    a String describing the selling goods in the auction.
      * @return true if the auction is correctly created, false otherwise.
      */
-    public boolean createAuction(String auction_name, AuctionUser user, Date expirationDate, double reserved_price, String description);
+    public boolean createAuction(String auction_name, User user, Date expirationDate, double reserved_price, String description);
 
     /**
      * Checks the status of the auction.

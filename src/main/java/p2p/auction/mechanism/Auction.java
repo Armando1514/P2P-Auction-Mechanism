@@ -9,13 +9,13 @@ import java.util.HashSet;
 
 public class Auction implements Serializable {
 
-    private AuctionUser owner;
+    private User owner;
     private String auctionName;
     private HashSet<PeerAddress> participants;
     private Date expirationDate;
     private ArrayList<AuctionBid> slots;
 
-    public Auction(AuctionUser owner, String auctionName, HashSet<PeerAddress> participants, Date expirationDate)
+    public Auction(User owner, String auctionName, HashSet<PeerAddress> participants, Date expirationDate)
     {
         this.owner = owner;
         this.auctionName = auctionName;
@@ -24,16 +24,16 @@ public class Auction implements Serializable {
         this.slots = new ArrayList<AuctionBid>();
     }
 
-    public AuctionUser getOwner() {
+    public User getOwner() {
         return this.owner;
     }
 
-    public Auction setOwner(AuctionUser owner) {
+    public Auction setOwner(User owner) {
         this.owner = owner;
         return this;
     }
 
-    public void setNickname(AuctionUser owner) {
+    public void setNickname(User owner) {
         this.owner = owner;
     }
 

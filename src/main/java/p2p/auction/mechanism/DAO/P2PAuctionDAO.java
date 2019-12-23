@@ -1,88 +1,36 @@
-package p2p.auction.mechanism;
+package p2p.auction.mechanism.DAO;
 
 import net.tomp2p.dht.FutureGet;
 import net.tomp2p.dht.FuturePut;
-import net.tomp2p.dht.PeerBuilderDHT;
 import net.tomp2p.dht.PeerDHT;
-import net.tomp2p.futures.FutureBootstrap;
-import net.tomp2p.p2p.Peer;
-import net.tomp2p.p2p.PeerBuilder;
 import net.tomp2p.peers.Number160;
 import net.tomp2p.peers.Number640;
 import net.tomp2p.peers.PeerAddress;
-import net.tomp2p.rpc.ObjectDataReply;
 import net.tomp2p.storage.Data;
 import net.tomp2p.utils.Pair;
+import p2p.auction.mechanism.Auction;
+import p2p.auction.mechanism.AuctionBid;
 
 import java.io.IOException;
-import java.net.InetAddress;
 import java.util.Map;
 import java.util.Random;
 
-public class P2PAuctionCRUD {
+public class P2PAuctionDAO implements AuctionDAO {
 
-    final private Peer peer;
     final private PeerDHT peerDHT;
-    final private int DEFAULT_MASTER_PORT = 4000;
+    private static P2PAuctionDAO p2PAuctionDAO = null;
 
 
+    private P2PAuctionDAO(PeerDHT peerDHT) {
 
-    public P2PAuctionCRUD(int id, String boot_peer, final MessageListener listener) throws Exception {
-                 /*
-           1. Creates a peer builder with the provided peer ID
-           2. Sets the UDP and TCP ports to the specified value (DEFAULT_MASTER_PORT + id).
-           3. Creates a peer with our parameters and starts to listen for incoming connections.
-         */
-        peer = new PeerBuilder(Number160.createHash(id)).
-                ports(DEFAULT_MASTER_PORT + id).start();
-        // we start a peer DHT
-        peerDHT = new PeerBuilderDHT(peer).start();
-
-        /*
-         The bootstrapping i.d. finding an existing peer in the overlay for the first
-         connection is address with a well known peer listener (boot_peer).
-         The peers need to know the ip address where to connect the first time.
-         */
-        FutureBootstrap fb = peer.bootstrap().inetAddress(InetAddress.getByName(boot_peer)).
-                ports(DEFAULT_MASTER_PORT).start();
-
-        // Wait for because fb is an asynchronous operation.
-        fb.awaitUninterruptibly();
-
-        if (fb.isSuccess()) {
-
-            // The routing is initiated to the peers specified in "bootstrapTo".
-            peer.discover().peerAddress(fb.bootstrapTo().iterator().next()).
-                    start().awaitUninterruptibly();
-        }
-        else {
-
-            throw new Exception("Error in master peer bootstrap.");
-        }
-        /*
-         * Replies to a direct message from a peer. This reply is based on objects.
-         *
-         * @param sender
-         *            The sender of this message
-         * @param request
-         *            The request that the sender sent.
-         * @return A new object that is the reply.
-         * @throws Exception
-         */
-        peer.objectDataReply(new ObjectDataReply() {
-
-            public Object reply(PeerAddress sender, Object request) throws Exception {
-
-                return listener.parseMessage(request);
-            }
-        });
+        this.peerDHT = peerDHT;
     }
 
     private static final Random RND = new Random(42L);
 
 
     /* Read operation */
-    protected Auction read(String auction_name) throws Exception {
+    public Auction read(String auction_name) throws Exception {
 
         FutureGet futureGet = this.peerDHT.get(Number160.createHash(auction_name)).getLatest().start();
         futureGet.awaitUninterruptibly();
@@ -95,9 +43,24 @@ public class P2PAuctionCRUD {
         return null;
     }
 
+    /* Delete operation */
+    public void delete(String auction_name) {
+        peerDHT.remove(Number160.createHash(auction_name)).all().start()
+                .awaitUninterruptibly();
+
+    }
+
+    public void create(Auction auction) throws Exception {
+        FuturePut p = peerDHT.put(Number160.createHash(auction.getAuctionName())).putIfAbsent()
+                .data(new Data(auction)).start().awaitUninterruptibly();
+        if(!p.isSuccess())
+            throw new Exception("The nickname is not available, change it.");
+
+    }
+
 
     /* Update the auction's values in an async p2p system, maintaining the consistency */
-    protected void createAndUpdate(Auction auction, AuctionBid newBid) throws Exception {
+    public void update(Auction auction, AuctionBid newBid) throws Exception {
         Pair<Number640, Byte> pair2 = null;
         Pair<Number160, Data> pair = null;
         for(int i=0; i < 5; i++)
@@ -248,7 +211,14 @@ public class P2PAuctionCRUD {
         return new Pair<Number640, K>(latestKey, latestData);
     }
 
-    protected PeerDHT getPeerDHT() {
-        return peerDHT;
+
+    public static AuctionDAO getInstance(PeerDHT peerDHT){
+
+        if(p2PAuctionDAO == null) {
+            p2PAuctionDAO = new P2PAuctionDAO(peerDHT);
+        }
+
+        return p2PAuctionDAO;
     }
+
 }

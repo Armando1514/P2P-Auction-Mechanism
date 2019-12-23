@@ -5,9 +5,9 @@ import java.io.Serializable;
 public class AuctionBid implements Serializable {
 
     private Auction auction;
-    private AuctionUser user;
+    private User user;
     private double bidValue;
-    public AuctionBid(Auction auction, AuctionUser user, double bidValue)
+    public AuctionBid(Auction auction, User user, double bidValue)
     {
         this.setAuction(auction);
         this.setUser(user);
@@ -36,11 +36,11 @@ public class AuctionBid implements Serializable {
         this.auction = auction;
     }
 
-    public AuctionUser getUser() {
+    public User getUser() {
         return user;
     }
 
-    public void setUser(AuctionUser user) {
+    public void setUser(User user) {
         this.user = user;
     }
 

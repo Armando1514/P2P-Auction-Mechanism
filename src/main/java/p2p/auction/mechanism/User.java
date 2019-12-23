@@ -2,14 +2,14 @@ package p2p.auction.mechanism;
 
 import java.io.Serializable;
 
-public class AuctionUser implements Serializable {
+public class User implements Serializable {
     private String nickname;
     private String password;
     private Double money;
     private String latestAuctionsJoined;
     private String myAuctions;
 
-    public AuctionUser(String nickname, String password, Double money, String latestAuctionJoined, String myAuctions) {
+    public User(String nickname, String password, Double money, String latestAuctionJoined, String myAuctions) {
         this.nickname = nickname;
         this.password = password;
         this.money = money;
@@ -46,7 +46,7 @@ public class AuctionUser implements Serializable {
         return this.nickname;
     }
 
-    public AuctionUser setNickname(String nickname) {
+    public User setNickname(String nickname) {
         this.nickname = nickname;
         return this;
     }
