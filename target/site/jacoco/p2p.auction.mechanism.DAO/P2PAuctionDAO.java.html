@@ -1,0 +1,338 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="it"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>P2PAuctionDAO.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">P2P-auction-system</a> &gt; <a href="index.source.html" class="el_package">p2p.auction.mechanism.DAO</a> &gt; <span class="el_source">P2PAuctionDAO.java</span></div><h1>P2PAuctionDAO.java</h1><pre class="source lang-java linenums">package p2p.auction.mechanism.DAO;
+
+import net.tomp2p.dht.FutureGet;
+import net.tomp2p.dht.FuturePut;
+import net.tomp2p.dht.PeerDHT;
+import net.tomp2p.peers.Number160;
+import net.tomp2p.peers.Number640;
+import net.tomp2p.peers.PeerAddress;
+import net.tomp2p.storage.Data;
+import net.tomp2p.utils.Pair;
+import p2p.auction.mechanism.Auction;
+import p2p.auction.mechanism.AuctionBid;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
+
+public class P2PAuctionDAO implements AuctionDAO {
+
+    final private PeerDHT peerDHT;
+<span class="fc" id="L22">    private static P2PAuctionDAO p2PAuctionDAO = null;</span>
+
+
+<span class="fc" id="L25">    private P2PAuctionDAO(PeerDHT peerDHT) {</span>
+
+<span class="fc" id="L27">        this.peerDHT = peerDHT;</span>
+<span class="fc" id="L28">    }</span>
+
+<span class="fc" id="L30">    private static final Random RND = new Random(42L);</span>
+
+
+
+    /* Read operation */
+    public Auction read(String auction_name) throws Exception {
+
+<span class="fc" id="L37">        FutureGet futureGet = this.peerDHT.get(Number160.createHash(auction_name)).getLatest().start();</span>
+<span class="fc" id="L38">        futureGet.awaitUninterruptibly();</span>
+<span class="pc bpc" id="L39" title="1 of 2 branches missed.">        if (futureGet.isSuccess()) {</span>
+            //auction not found
+<span class="fc bfc" id="L41" title="All 2 branches covered.">            if (futureGet.isEmpty())</span>
+<span class="fc" id="L42">                return null;</span>
+<span class="fc" id="L43">            return (Auction) futureGet.data().object();</span>
+        }
+<span class="nc" id="L45">        return null;</span>
+    }
+
+    /* read all operation */
+    public HashMap&lt;String, Auction&gt; readAll() throws IOException, ClassNotFoundException {
+<span class="fc" id="L50">        FutureGet futureGet = this.peerDHT.get(Number160.createHash(&quot;getAll&quot;)).getLatest().start();</span>
+<span class="fc" id="L51">        futureGet.awaitUninterruptibly();</span>
+<span class="pc bpc" id="L52" title="1 of 2 branches missed.">        if (futureGet.isSuccess()) {</span>
+            //auction not found
+<span class="fc bfc" id="L54" title="All 2 branches covered.">            if (futureGet.isEmpty()) {</span>
+<span class="fc" id="L55">                return null;</span>
+            }
+<span class="fc" id="L57">            return (HashMap&lt;String, Auction&gt;) futureGet.data().object();</span>
+        }
+<span class="nc" id="L59">        return null;</span>
+    }
+
+
+    /* Delete operation */
+    public void delete(String auction_name) throws Exception {
+<span class="fc" id="L65">        this.updateGetAll(this.read(auction_name), false);</span>
+
+<span class="fc" id="L67">        peerDHT.remove(Number160.createHash(auction_name)).all().start()</span>
+<span class="fc" id="L68">                .awaitUninterruptibly();</span>
+
+<span class="fc" id="L70">    }</span>
+
+    public void create(Auction auction) throws Exception {
+
+<span class="fc" id="L74">        FuturePut p = peerDHT.put(Number160.createHash(auction.getAuctionName())).putIfAbsent()</span>
+<span class="fc" id="L75">                .data(new Data(auction)).start().awaitUninterruptibly();</span>
+
+<span class="pc bpc" id="L77" title="1 of 2 branches missed.">        if (!p.isSuccess())</span>
+<span class="nc" id="L78">            throw new Exception(&quot;The nickname is not available, change it.&quot;);</span>
+
+
+<span class="fc bfc" id="L81" title="All 2 branches covered.">        if (this.readAll() == null) {</span>
+<span class="fc" id="L82">            System.out.println(&quot;dsa&quot;);</span>
+<span class="fc" id="L83">            HashMap&lt;String, Auction&gt; x = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L84">            x.put(auction.getAuctionName(), auction);</span>
+<span class="fc" id="L85">            p = peerDHT.put(Number160.createHash(&quot;getAll&quot;)).putIfAbsent()</span>
+<span class="fc" id="L86">                    .data(new Data(x)).start().awaitUninterruptibly();</span>
+<span class="pc bpc" id="L87" title="1 of 2 branches missed.">            if (!p.isSuccess()) {</span>
+<span class="nc" id="L88">                System.out.println(&quot;success not&quot;);</span>
+
+<span class="nc" id="L90">                updateGetAll(auction, true);</span>
+            }
+
+
+<span class="fc" id="L94">        } else</span>
+<span class="fc" id="L95">            updateGetAll(auction, true);</span>
+<span class="fc" id="L96">    }</span>
+
+
+// if mode true, is for create, if mode false, is for removing.
+    private void updateGetAll(Auction auction, boolean mode) throws Exception {
+<span class="fc" id="L101">        Pair&lt;Number640, Byte&gt; pair2 = null;</span>
+
+<span class="pc bpc" id="L103" title="1 of 2 branches missed.">        for (int i = 0; i &lt; 5; i++) {</span>
+<span class="fc" id="L104">            Pair&lt;Number160, Data&gt; pair = getAndUpdateGetAll(peerDHT, auction, mode);</span>
+<span class="pc bpc" id="L105" title="1 of 2 branches missed.">            if (pair == null) {</span>
+<span class="nc" id="L106">                updateGetAll(auction, mode);</span>
+            }
+<span class="fc" id="L108">            FuturePut fp = peerDHT</span>
+<span class="fc" id="L109">                    .put(Number160.createHash(&quot;getAll&quot;))</span>
+<span class="fc" id="L110">                    .data( pair.element1().prepareFlag(),</span>
+<span class="fc" id="L111">                            pair.element0()).start().awaitUninterruptibly();</span>
+<span class="fc" id="L112">            pair2 = checkVersions(fp.rawResult());</span>
+            // 1 is PutStatus.OK_PREPARED
+<span class="pc bpc" id="L114" title="1 of 4 branches missed.">            if (pair2 != null &amp;&amp; pair2.element1() == 1) {</span>
+<span class="fc" id="L115">                break;</span>
+            }
+            // if not removed, a low ttl will eventually get rid of it
+<span class="fc" id="L118">            peerDHT.remove(Number160.createHash(&quot;getAll&quot;)).versionKey(pair.element0()).start()</span>
+<span class="fc" id="L119">                    .awaitUninterruptibly();</span>
+<span class="fc" id="L120">            Thread.sleep(RND.nextInt(500));</span>
+        }
+<span class="pc bpc" id="L122" title="2 of 4 branches missed.">        if (pair2 != null &amp;&amp; pair2.element1() == 1) {</span>
+<span class="fc" id="L123">            FuturePut fp = peerDHT.put(Number160.createHash(&quot;getAll&quot;))</span>
+<span class="fc" id="L124">                    .versionKey(pair2.element0().versionKey()).putConfirm()</span>
+<span class="fc" id="L125">                    .data(new Data()).start().awaitUninterruptibly();</span>
+<span class="fc" id="L126">            System.out.println(&quot;stored!: &quot; + fp.failedReason());</span>
+<span class="fc" id="L127">        } else {</span>
+<span class="nc" id="L128">            System.out</span>
+<span class="nc" id="L129">                    .println(&quot;we cannot handle this kind of inconsistency automatically, handing over the the API dev&quot;);</span>
+        }
+
+<span class="fc" id="L132">    }</span>
+
+    private static Pair&lt;Number160, Data&gt; getAndUpdateGetAll(PeerDHT peerDHT,
+                                                            Auction auction, boolean mode) throws InterruptedException, IOException, ClassNotFoundException {
+<span class="fc" id="L136">        Pair&lt;Number640, Data&gt; pair = null;</span>
+<span class="pc bpc" id="L137" title="1 of 2 branches missed.">        for (int i = 0; i &lt; 5; i++) {</span>
+<span class="fc" id="L138">            FutureGet fg = peerDHT.get(Number160.createHash(&quot;getAll&quot;)).getLatest().start()</span>
+<span class="fc" id="L139">                    .awaitUninterruptibly();</span>
+            // check if all the peers agree on the same latest version, if not
+            // wait a little and try again
+<span class="fc" id="L142">            pair = checkVersions(fg.rawData());</span>
+<span class="pc bpc" id="L143" title="1 of 2 branches missed.">            if (pair != null) {</span>
+<span class="fc" id="L144">                break;</span>
+            }
+<span class="nc" id="L146">            Thread.sleep(RND.nextInt(500));</span>
+        }
+        // we got the latest data
+<span class="pc bpc" id="L149" title="1 of 2 branches missed.">        if (pair != null) {</span>
+            // update operation is append
+<span class="fc" id="L151">            HashMap&lt;String, Auction&gt; hash = (HashMap&lt;String, Auction&gt;) pair.element1().object();</span>
+<span class="fc bfc" id="L152" title="All 2 branches covered.">            if(mode == true)</span>
+<span class="fc" id="L153">                hash.put(auction.getAuctionName(), auction);</span>
+            //remove mode
+            else
+<span class="fc" id="L156">            hash.remove(auction.getAuctionName());</span>
+
+<span class="fc" id="L158">            Data newData = new Data(hash);</span>
+<span class="fc" id="L159">            Number160 v = pair.element0().versionKey();</span>
+<span class="fc" id="L160">            long version = v.timestamp() + 1;</span>
+<span class="fc" id="L161">            newData.addBasedOn(v);</span>
+            //since we create a new version, we can access old versions as well
+<span class="fc" id="L163">            return new Pair&lt;Number160, Data&gt;(new Number160(version,</span>
+<span class="fc" id="L164">                    newData.hash()), newData);</span>
+
+        }
+<span class="nc" id="L167">        return null;</span>
+    }
+
+
+
+    /* Update the auction's values in an async p2p system, maintaining the consistency */
+    public void update(Auction auction, AuctionBid newBid) throws Exception {
+<span class="fc" id="L174">        Pair&lt;Number640, Byte&gt; pair2 = null;</span>
+<span class="fc" id="L175">        Pair&lt;Number160, Data&gt; pair = null;</span>
+<span class="pc bpc" id="L176" title="1 of 2 branches missed.">        for(int i=0; i &lt; 5; i++)</span>
+        {
+<span class="fc" id="L178">             pair = getAndUpdate(peerDHT, auction, newBid);</span>
+
+<span class="pc bpc" id="L180" title="1 of 2 branches missed.">            if (pair == null) {</span>
+<span class="nc" id="L181">                throw new BidException(&quot;we cannot handle this kind of inconsistency. Wait and retry after several minutes&quot;);</span>
+            }
+<span class="fc" id="L183">            FuturePut fp = peerDHT</span>
+<span class="fc" id="L184">                    .put(Number160.createHash(auction.getAuctionName()))</span>
+<span class="fc" id="L185">                    .data( pair.element1().prepareFlag(),</span>
+<span class="fc" id="L186">                            pair.element0()).start().awaitUninterruptibly();</span>
+
+<span class="fc" id="L188">            pair2 = checkVersions(fp.rawResult());</span>
+            // 1 is PutStatus.OK_PREPARED
+<span class="pc bpc" id="L190" title="1 of 4 branches missed.">            if (pair2 != null &amp;&amp; pair2.element1() == 1) {</span>
+<span class="fc" id="L191">                Auction lastAuction = (Auction) pair.element1().object();</span>
+
+                //get the last Bid
+<span class="fc bfc" id="L194" title="All 2 branches covered.">                if((lastAuction.getSlots().size() - 1) &gt; 0) {</span>
+                    int size;
+<span class="fc" id="L196">                    size = lastAuction.getSlots().size() - 1;</span>
+
+                    // check if the bid that i'm going to put, is bigger that the last bid inserted.
+<span class="fc" id="L199">                    AuctionBid lastBid = lastAuction.getSlots().get(size-1);</span>
+                    // if is lower, remove it.
+<span class="fc bfc" id="L201" title="All 2 branches covered.">                    if (!lastBid.isSmallerThan(newBid)) {</span>
+<span class="fc" id="L202">                        peerDHT.remove(Number160.createHash(auction.getAuctionName())).versionKey(pair.element0()).start()</span>
+<span class="fc" id="L203">                                .awaitUninterruptibly();</span>
+<span class="fc" id="L204">                        throw new BidException(&quot;Your bid: &quot; + newBid.getBidValue() + &quot; is lower than the last one: &quot; + lastBid.getBidValue() + &quot;, update the auction status.&quot;);</span>
+                    }
+<span class="fc" id="L206">                }</span>
+
+                break;
+            }
+
+
+
+            // if not removed, a low ttl will eventually get rid of it
+<span class="fc" id="L214">            peerDHT.remove(Number160.createHash(auction.getAuctionName())).versionKey(pair.element0()).start()</span>
+<span class="fc" id="L215">                    .awaitUninterruptibly();</span>
+<span class="fc" id="L216">            Thread.sleep(RND.nextInt(500));</span>
+            }
+<span class="pc bpc" id="L218" title="2 of 4 branches missed.">            if (pair2 != null &amp;&amp; pair2.element1() == 1) {</span>
+
+                FuturePut fp ;
+<span class="fc" id="L221">                         fp = peerDHT.put(Number160.createHash(auction.getAuctionName()))</span>
+<span class="fc" id="L222">                        .versionKey(pair2.element0().versionKey()).putConfirm()</span>
+<span class="fc" id="L223">                        .data(new Data()).start().awaitUninterruptibly();</span>
+
+<span class="fc" id="L225">            } else {</span>
+<span class="nc" id="L226">                throw new BidException(&quot;we cannot handle this kind of inconsistency. Wait and retry after several minutes&quot;);</span>
+            }
+
+<span class="fc" id="L229">    }</span>
+
+
+    /*
+       get latest version, check if all replica peers have latest version,
+       if not wait and try again, when you have the latest version do modification.
+       In this case, write the new bind and assign the slot to the user.
+       */
+    private static Pair&lt;Number160, Data&gt; getAndUpdate(PeerDHT peerDHT,
+                                                      Auction auction, AuctionBid newBid) throws BidException, InterruptedException, ClassNotFoundException,
+            IOException {
+<span class="fc" id="L240">        Pair&lt;Number640, Data&gt; pair = null;</span>
+
+<span class="pc bpc" id="L242" title="1 of 2 branches missed.">        for(int i = 0; i &lt; 5; i++)</span>
+        {
+            // get the latest version of the auction.
+<span class="fc" id="L245">            FutureGet fg =  peerDHT.get(Number160.createHash(auction.getAuctionName())).getLatest().start().awaitUninterruptibly();</span>
+            // check if all the peers agree on the same latest version, if not, wait a little and try again
+<span class="fc" id="L247">            pair = checkVersions(fg.rawData());</span>
+<span class="pc bpc" id="L248" title="1 of 2 branches missed.">            if(pair != null)</span>
+            {
+<span class="fc" id="L250">                break;</span>
+            }
+            // wait 500 ms first to ask again the latest version.
+<span class="nc" id="L253">            Thread.sleep(RND.nextInt(500));</span>
+
+        }
+
+        boolean checkValue;
+        //we got the latest data
+<span class="pc bpc" id="L259" title="1 of 2 branches missed.">        if(pair != null)</span>
+        {
+            int size ;
+<span class="fc" id="L262">            Auction lastAuction = (Auction) pair.element1().object();</span>
+<span class="fc" id="L263">            AuctionBid lastBid = null;</span>
+            //get the last Bid
+<span class="fc bfc" id="L265" title="All 2 branches covered.">            if((lastAuction.getSlots().size() - 1) &gt; 0) {</span>
+<span class="fc" id="L266">                size = lastAuction.getSlots().size() - 1;</span>
+<span class="fc" id="L267">                lastBid = lastAuction.getSlots().get(size);</span>
+                //if the new bid's value, is less than the last one, the flag is false, and throw an exception.
+<span class="fc" id="L269">                checkValue = lastBid.isSmallerThan(newBid);</span>
+            }
+
+            else{
+                // this is the first bid
+<span class="fc" id="L274">                checkValue = true;</span>
+            }
+
+            // does it means that we can add the slots, because the new bid is bigger than the last
+<span class="fc bfc" id="L278" title="All 2 branches covered.">            if(checkValue) {</span>
+                // we add the new bid to the Auction.
+<span class="fc" id="L280">                lastAuction.getSlots().add(newBid);</span>
+<span class="fc" id="L281">                Data newData = new Data(lastAuction);</span>
+<span class="fc" id="L282">                Number160 v = pair.element0().versionKey();</span>
+<span class="fc" id="L283">                long version = v.timestamp() + 1;</span>
+<span class="fc" id="L284">                newData.addBasedOn(v);</span>
+                //since we create a new version, we can access old version as well
+                //Creates a new key with a long for the first 64bits, and using the lower 96bits for the rest.
+
+<span class="fc" id="L288">                return new Pair&lt;Number160, Data&gt;(new Number160(version,</span>
+<span class="fc" id="L289">                        newData.hash()), newData);</span>
+            }
+            else
+            {
+                //does it means that our bid is lower than the last bid, so we need to make another bid.
+<span class="fc" id="L294">                throw new BidException(&quot;Your bid: &quot;+ newBid.getBidValue()+&quot; is lower than the last one: &quot;+ lastBid.getBidValue() + &quot;, update the auction status.&quot;);</span>
+            }
+        }
+<span class="nc" id="L297">        return null;</span>
+    }
+
+
+    private static &lt;K&gt; Pair&lt;Number640, K&gt; checkVersions(Map&lt;PeerAddress, Map&lt;Number640, K&gt;&gt; rawData)
+    {
+<span class="fc" id="L303">        Number640 latestKey = null;</span>
+<span class="fc" id="L304">        K latestData = null;</span>
+<span class="fc bfc" id="L305" title="All 2 branches covered.">        for ( Map.Entry&lt;PeerAddress, Map&lt;Number640, K&gt;&gt; entry : rawData.entrySet())</span>
+        {
+<span class="pc bpc" id="L307" title="1 of 4 branches missed.">            if (latestData == null &amp;&amp; latestKey == null)</span>
+            {
+<span class="fc" id="L309">                latestData = entry.getValue().values().iterator().next();</span>
+<span class="fc" id="L310">                latestKey = entry.getValue().keySet().iterator().next();</span>
+            }
+            else
+            {
+<span class="pc bpc" id="L314" title="1 of 2 branches missed.">                if(!latestKey.equals(entry.getValue().keySet().iterator().next())</span>
+<span class="pc bpc" id="L315" title="1 of 2 branches missed.">                        || !latestData.equals(entry.getValue().values()</span>
+<span class="fc" id="L316">                        .iterator().next()))</span>
+                {
+<span class="nc" id="L318">                    return null;</span>
+                }
+            }
+
+<span class="fc" id="L322">        }</span>
+<span class="fc" id="L323">        return new Pair&lt;Number640, K&gt;(latestKey, latestData);</span>
+    }
+
+
+
+    public static AuctionDAO getInstance(PeerDHT peerDHT){
+
+<span class="pc bpc" id="L330" title="1 of 2 branches missed.">        if(p2PAuctionDAO == null) {</span>
+<span class="fc" id="L331">            p2PAuctionDAO = new P2PAuctionDAO(peerDHT);</span>
+        }
+
+<span class="fc" id="L334">        return p2PAuctionDAO;</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

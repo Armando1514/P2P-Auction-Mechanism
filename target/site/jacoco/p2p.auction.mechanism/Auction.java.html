@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="it"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Auction.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">P2P-auction-system</a> &gt; <a href="index.source.html" class="el_package">p2p.auction.mechanism</a> &gt; <span class="el_source">Auction.java</span></div><h1>Auction.java</h1><pre class="source lang-java linenums">package p2p.auction.mechanism;
+
+import net.tomp2p.peers.PeerAddress;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashSet;
+
+public class Auction implements Serializable {
+
+    private User owner;
+    private String auctionName;
+    private HashSet&lt;PeerAddress&gt; participants;
+    private Date expirationDate;
+    private ArrayList&lt;AuctionBid&gt; slots;
+
+    public Auction(User owner, String auctionName, HashSet&lt;PeerAddress&gt; participants, Date expirationDate)
+<span class="fc" id="L19">    {</span>
+<span class="fc" id="L20">        this.owner = owner;</span>
+<span class="fc" id="L21">        this.auctionName = auctionName;</span>
+<span class="fc" id="L22">        this.setParticipants(participants);</span>
+<span class="fc" id="L23">        this.setExpirationDate(expirationDate);</span>
+<span class="fc" id="L24">        this.slots = new ArrayList&lt;AuctionBid&gt;();</span>
+<span class="fc" id="L25">    }</span>
+
+    public User getOwner() {
+<span class="nc" id="L28">        return this.owner;</span>
+    }
+
+    public Auction setOwner(User owner) {
+<span class="nc" id="L32">        this.owner = owner;</span>
+<span class="nc" id="L33">        return this;</span>
+    }
+
+    public void setNickname(User owner) {
+<span class="nc" id="L37">        this.owner = owner;</span>
+<span class="nc" id="L38">    }</span>
+
+    public String getAuctionName() {
+<span class="fc" id="L41">        return this.auctionName;</span>
+    }
+
+    public void setAuctionName(String auctionName) {
+<span class="nc" id="L45">        this.auctionName = auctionName;</span>
+<span class="nc" id="L46">    }</span>
+
+    public HashSet&lt;PeerAddress&gt; getParticipants() {
+<span class="nc" id="L49">        return this.participants;</span>
+    }
+
+    public void setParticipants(HashSet&lt;PeerAddress&gt; participants) {
+<span class="fc" id="L53">        this.participants = participants;</span>
+<span class="fc" id="L54">    }</span>
+
+    public Date getExpirationDate() {
+<span class="nc" id="L57">        return this.expirationDate;</span>
+    }
+
+    public void setExpirationDate(Date expirationDate) {
+<span class="fc" id="L61">        this.expirationDate = expirationDate;</span>
+<span class="fc" id="L62">    }</span>
+
+
+    public ArrayList&lt;AuctionBid&gt; getSlots() {
+<span class="fc" id="L66">        return this.slots;</span>
+    }
+
+    public void setSlot(AuctionBid bid) {
+<span class="nc" id="L70">        this.slots.add(bid);</span>
+<span class="nc" id="L71">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

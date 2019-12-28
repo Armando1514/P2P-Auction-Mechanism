@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd" name="p2p.auction.mechanism.DAO.P2PAuctionDAOTests" time="24.494" tests="4" errors="0" skipped="0" failures="0">
+  <properties>
+    <property name="sun.desktop" value="windows"/>
+    <property name="awt.toolkit" value="sun.awt.windows.WToolkit"/>
+    <property name="file.encoding.pkg" value="sun.io"/>
+    <property name="java.specification.version" value="1.8"/>
+    <property name="sun.cpu.isalist" value="amd64"/>
+    <property name="sun.jnu.encoding" value="Cp1252"/>
+    <property name="java.class.path" value="C:\Users\ferra\IdeaProjects\P2P-auction-system\target\test-classes;C:\Users\ferra\IdeaProjects\P2P-auction-system\target\classes;C:\Users\ferra\.m2\repository\org\junit\jupiter\junit-jupiter\5.5.2\junit-jupiter-5.5.2.jar;C:\Users\ferra\.m2\repository\org\junit\jupiter\junit-jupiter-api\5.5.2\junit-jupiter-api-5.5.2.jar;C:\Users\ferra\.m2\repository\org\apiguardian\apiguardian-api\1.1.0\apiguardian-api-1.1.0.jar;C:\Users\ferra\.m2\repository\org\opentest4j\opentest4j\1.2.0\opentest4j-1.2.0.jar;C:\Users\ferra\.m2\repository\org\junit\platform\junit-platform-commons\1.5.2\junit-platform-commons-1.5.2.jar;C:\Users\ferra\.m2\repository\org\junit\jupiter\junit-jupiter-params\5.5.2\junit-jupiter-params-5.5.2.jar;C:\Users\ferra\.m2\repository\org\junit\jupiter\junit-jupiter-engine\5.5.2\junit-jupiter-engine-5.5.2.jar;C:\Users\ferra\.m2\repository\org\junit\platform\junit-platform-engine\1.5.2\junit-platform-engine-1.5.2.jar;C:\Users\ferra\.m2\repository\net\tomp2p\tomp2p-all\5.0-Beta8\tomp2p-all-5.0-Beta8.jar;C:\Users\ferra\.m2\repository\net\tomp2p\tomp2p-core\5.0-Beta8\tomp2p-core-5.0-Beta8.jar;C:\Users\ferra\.m2\repository\io\netty\netty-transport\4.0.28.Final\netty-transport-4.0.28.Final.jar;C:\Users\ferra\.m2\repository\io\netty\netty-buffer\4.0.28.Final\netty-buffer-4.0.28.Final.jar;C:\Users\ferra\.m2\repository\io\netty\netty-common\4.0.28.Final\netty-common-4.0.28.Final.jar;C:\Users\ferra\.m2\repository\net\tomp2p\tomp2p-nat\5.0-Beta8\tomp2p-nat-5.0-Beta8.jar;C:\Users\ferra\.m2\repository\org\bitlet\weupnp\0.1.2\weupnp-0.1.2.jar;C:\Users\ferra\.m2\repository\com\ganyo\gcm-server\1.0.2\gcm-server-1.0.2.jar;C:\Users\ferra\.m2\repository\com\googlecode\json-simple\json-simple\1.1\json-simple-1.1.jar;C:\Users\ferra\.m2\repository\net\tomp2p\tomp2p-android\5.0-Beta8\tomp2p-android-5.0-Beta8.jar;C:\Users\ferra\.m2\repository\net\tomp2p\tomp2p-replication\5.0-Beta8\tomp2p-replication-5.0-Beta8.jar;C:\Users\ferra\.m2\repository\net\tomp2p\tomp2p-storage\5.0-Beta8\tomp2p-storage-5.0-Beta8.jar;C:\Users\ferra\.m2\repository\org\mapdb\mapdb\1.0.6\mapdb-1.0.6.jar;C:\Users\ferra\.m2\repository\net\tomp2p\tomp2p-dht\5.0-Beta8\tomp2p-dht-5.0-Beta8.jar;C:\Users\ferra\.m2\repository\net\tomp2p\tomp2p-tracker\5.0-Beta8\tomp2p-tracker-5.0-Beta8.jar;C:\Users\ferra\.m2\repository\org\slf4j\slf4j-api\1.7.5\slf4j-api-1.7.5.jar;C:\Users\ferra\.m2\repository\org\beryx\text-io\3.3.0\text-io-3.3.0.jar;C:\Users\ferra\.m2\repository\jline\jline\2.14.5\jline-2.14.5.jar;C:\Users\ferra\.m2\repository\org\beryx\awt-color-factory\1.0.0\awt-color-factory-1.0.0.jar;C:\Users\ferra\.m2\repository\args4j\args4j\2.33\args4j-2.33.jar;"/>
+    <property name="java.vm.vendor" value="Oracle Corporation"/>
+    <property name="sun.arch.data.model" value="64"/>
+    <property name="user.variant" value=""/>
+    <property name="java.vendor.url" value="http://java.oracle.com/"/>
+    <property name="user.timezone" value="Europe/Berlin"/>
+    <property name="java.vm.specification.version" value="1.8"/>
+    <property name="os.name" value="Windows 10"/>
+    <property name="user.country" value="IT"/>
+    <property name="sun.java.launcher" value="SUN_STANDARD"/>
+    <property name="sun.boot.library.path" value="C:\Program Files\Java\jdk1.8.0_191\jre\bin"/>
+    <property name="sun.java.command" value="C:\Users\ferra\AppData\Local\Temp\surefire4802222497645632868\surefirebooter3270579108412732031.jar C:\Users\ferra\AppData\Local\Temp\surefire4802222497645632868 2019-12-28T14-52-53_127-jvmRun1 surefire6437731768007718943tmp surefire_05089830980648633624tmp"/>
+    <property name="surefire.test.class.path" value="C:\Users\ferra\IdeaProjects\P2P-auction-system\target\test-classes;C:\Users\ferra\IdeaProjects\P2P-auction-system\target\classes;C:\Users\ferra\.m2\repository\org\junit\jupiter\junit-jupiter\5.5.2\junit-jupiter-5.5.2.jar;C:\Users\ferra\.m2\repository\org\junit\jupiter\junit-jupiter-api\5.5.2\junit-jupiter-api-5.5.2.jar;C:\Users\ferra\.m2\repository\org\apiguardian\apiguardian-api\1.1.0\apiguardian-api-1.1.0.jar;C:\Users\ferra\.m2\repository\org\opentest4j\opentest4j\1.2.0\opentest4j-1.2.0.jar;C:\Users\ferra\.m2\repository\org\junit\platform\junit-platform-commons\1.5.2\junit-platform-commons-1.5.2.jar;C:\Users\ferra\.m2\repository\org\junit\jupiter\junit-jupiter-params\5.5.2\junit-jupiter-params-5.5.2.jar;C:\Users\ferra\.m2\repository\org\junit\jupiter\junit-jupiter-engine\5.5.2\junit-jupiter-engine-5.5.2.jar;C:\Users\ferra\.m2\repository\org\junit\platform\junit-platform-engine\1.5.2\junit-platform-engine-1.5.2.jar;C:\Users\ferra\.m2\repository\net\tomp2p\tomp2p-all\5.0-Beta8\tomp2p-all-5.0-Beta8.jar;C:\Users\ferra\.m2\repository\net\tomp2p\tomp2p-core\5.0-Beta8\tomp2p-core-5.0-Beta8.jar;C:\Users\ferra\.m2\repository\io\netty\netty-transport\4.0.28.Final\netty-transport-4.0.28.Final.jar;C:\Users\ferra\.m2\repository\io\netty\netty-buffer\4.0.28.Final\netty-buffer-4.0.28.Final.jar;C:\Users\ferra\.m2\repository\io\netty\netty-common\4.0.28.Final\netty-common-4.0.28.Final.jar;C:\Users\ferra\.m2\repository\net\tomp2p\tomp2p-nat\5.0-Beta8\tomp2p-nat-5.0-Beta8.jar;C:\Users\ferra\.m2\repository\org\bitlet\weupnp\0.1.2\weupnp-0.1.2.jar;C:\Users\ferra\.m2\repository\com\ganyo\gcm-server\1.0.2\gcm-server-1.0.2.jar;C:\Users\ferra\.m2\repository\com\googlecode\json-simple\json-simple\1.1\json-simple-1.1.jar;C:\Users\ferra\.m2\repository\net\tomp2p\tomp2p-android\5.0-Beta8\tomp2p-android-5.0-Beta8.jar;C:\Users\ferra\.m2\repository\net\tomp2p\tomp2p-replication\5.0-Beta8\tomp2p-replication-5.0-Beta8.jar;C:\Users\ferra\.m2\repository\net\tomp2p\tomp2p-storage\5.0-Beta8\tomp2p-storage-5.0-Beta8.jar;C:\Users\ferra\.m2\repository\org\mapdb\mapdb\1.0.6\mapdb-1.0.6.jar;C:\Users\ferra\.m2\repository\net\tomp2p\tomp2p-dht\5.0-Beta8\tomp2p-dht-5.0-Beta8.jar;C:\Users\ferra\.m2\repository\net\tomp2p\tomp2p-tracker\5.0-Beta8\tomp2p-tracker-5.0-Beta8.jar;C:\Users\ferra\.m2\repository\org\slf4j\slf4j-api\1.7.5\slf4j-api-1.7.5.jar;C:\Users\ferra\.m2\repository\org\beryx\text-io\3.3.0\text-io-3.3.0.jar;C:\Users\ferra\.m2\repository\jline\jline\2.14.5\jline-2.14.5.jar;C:\Users\ferra\.m2\repository\org\beryx\awt-color-factory\1.0.0\awt-color-factory-1.0.0.jar;C:\Users\ferra\.m2\repository\args4j\args4j\2.33\args4j-2.33.jar;"/>
+    <property name="sun.cpu.endian" value="little"/>
+    <property name="user.home" value="C:\Users\ferra"/>
+    <property name="user.language" value="it"/>
+    <property name="java.specification.vendor" value="Oracle Corporation"/>
+    <property name="java.home" value="C:\Program Files\Java\jdk1.8.0_191\jre"/>
+    <property name="basedir" value="C:\Users\ferra\IdeaProjects\P2P-auction-system"/>
+    <property name="file.separator" value="\"/>
+    <property name="line.separator" value="&#10;"/>
+    <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
+    <property name="java.specification.name" value="Java Platform API Specification"/>
+    <property name="java.awt.graphicsenv" value="sun.awt.Win32GraphicsEnvironment"/>
+    <property name="surefire.real.class.path" value="C:\Users\ferra\AppData\Local\Temp\surefire4802222497645632868\surefirebooter3270579108412732031.jar;C:\\Users\\ferra\\.m2\\repository\\org\\jacoco\\org.jacoco.agent\\0.8.2\\org.jacoco.agent-0.8.2-runtime.jar"/>
+    <property name="sun.boot.class.path" value="C:\Program Files\Java\jdk1.8.0_191\jre\lib\resources.jar;C:\Program Files\Java\jdk1.8.0_191\jre\lib\rt.jar;C:\Program Files\Java\jdk1.8.0_191\jre\lib\sunrsasign.jar;C:\Program Files\Java\jdk1.8.0_191\jre\lib\jsse.jar;C:\Program Files\Java\jdk1.8.0_191\jre\lib\jce.jar;C:\Program Files\Java\jdk1.8.0_191\jre\lib\charsets.jar;C:\Program Files\Java\jdk1.8.0_191\jre\lib\jfr.jar;C:\Program Files\Java\jdk1.8.0_191\jre\classes"/>
+    <property name="user.script" value=""/>
+    <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
+    <property name="java.runtime.version" value="1.8.0_191-b12"/>
+    <property name="user.name" value="ferra"/>
+    <property name="path.separator" value=";"/>
+    <property name="os.version" value="10.0"/>
+    <property name="java.endorsed.dirs" value="C:\Program Files\Java\jdk1.8.0_191\jre\lib\endorsed"/>
+    <property name="java.runtime.name" value="Java(TM) SE Runtime Environment"/>
+    <property name="file.encoding" value="Cp1252"/>
+    <property name="java.vm.name" value="Java HotSpot(TM) 64-Bit Server VM"/>
+    <property name="localRepository" value="C:\Users\ferra\.m2\repository"/>
+    <property name="java.vendor.url.bug" value="http://bugreport.sun.com/bugreport/"/>
+    <property name="java.io.tmpdir" value="C:\Users\ferra\AppData\Local\Temp\"/>
+    <property name="java.version" value="1.8.0_191"/>
+    <property name="user.dir" value="C:\Users\ferra\IdeaProjects\P2P-auction-system"/>
+    <property name="os.arch" value="amd64"/>
+    <property name="java.vm.specification.name" value="Java Virtual Machine Specification"/>
+    <property name="java.awt.printerjob" value="sun.awt.windows.WPrinterJob"/>
+    <property name="sun.os.patch.level" value=""/>
+    <property name="java.library.path" value="C:\Program Files\Java\jdk1.8.0_191\jre\bin;C:\WINDOWS\Sun\Java\bin;C:\WINDOWS\system32;C:\WINDOWS;C:\ProgramData\DockerDesktop\version-bin;C:\Program Files\Docker\Docker\Resources\bin;C:\Python27\;C:\Python27\Scripts;C:\Program Files (x86)\Common Files\Oracle\Java\javapath;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;C:\Program Files\Git\cmd;C:\Program Files\nodejs\;C:\ProgramData\chocolatey\bin;C:\Program Files\Amazon\AWSCLI\;C:\Program Files\Amazon\ECSCLI;C:\Program Files\Java\jdk1.8.0_191;C:\Users\ferra\.cargo\bin;C:\Users\ferra\AppData\Local\Programs\Python\Python37-32\Scripts\;C:\Users\ferra\AppData\Local\Programs\Python\Python37-32\;C:\Users\ferra\AppData\Local\Microsoft\WindowsApps;C:\Users\ferra\AppData\Local\GitHubDesktop\bin;C:\Users\ferra\AppData\Local\atom\bin;C:\Program Files\JetBrains\IntelliJ IDEA Community Edition 2019.1.2\bin;;C:\Users\ferra\AppData\Roaming\npm;C:\Program Files\JetBrains\IntelliJ IDEA 2019.1.3\bin;;C:\Program Files\Amazon\ECSCLI;C:\Users\ferra.cargo\bin;C:\Users\ferra\OneDrive\Documenti\apache-maven-3.6.2\bin;;."/>
+    <property name="java.vm.info" value="mixed mode"/>
+    <property name="java.vendor" value="Oracle Corporation"/>
+    <property name="java.vm.version" value="25.191-b12"/>
+    <property name="java.ext.dirs" value="C:\Program Files\Java\jdk1.8.0_191\jre\lib\ext;C:\WINDOWS\Sun\Java\lib\ext"/>
+    <property name="sun.io.unicode.encoding" value="UnicodeLittle"/>
+    <property name="java.class.version" value="52.0"/>
+  </properties>
+  <testcase name="testReadLastBid" classname="p2p.auction.mechanism.DAO.P2PAuctionDAOTests" time="0.891"/>
+  <testcase name="testUpdateGetAll" classname="p2p.auction.mechanism.DAO.P2PAuctionDAOTests" time="1.981"/>
+  <testcase name="testReadEmptyAuction" classname="p2p.auction.mechanism.DAO.P2PAuctionDAOTests" time="0"/>
+  <testcase name="testUpdate" classname="p2p.auction.mechanism.DAO.P2PAuctionDAOTests" time="0.269"/>
+</testsuite>

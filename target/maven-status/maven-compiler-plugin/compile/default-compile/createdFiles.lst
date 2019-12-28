@@ -1,12 +1,4 @@
-p2p\auction\mechanism\Auction.class
-p2p\auction\mechanism\BidException.class
 p2p\auction\mechanism\P2PAuction.class
-p2p\auction\mechanism\AuctionUser.class
-p2p\auction\mechanism\P2PAuctionCRUD.class
-p2p\auction\mechanism\ConsoleControl$1MessageListenerImpl.class
+p2p\auction\mechanism\Auction.class
 p2p\auction\mechanism\AuctionBid.class
-p2p\auction\mechanism\P2PAuctionCRUD$1.class
-p2p\auction\mechanism\P2PAuctionFactory.class
-p2p\auction\mechanism\ConsoleControl.class
-p2p\auction\mechanism\P2PAuctionAPI.class
 p2p\auction\mechanism\MessageListener.class

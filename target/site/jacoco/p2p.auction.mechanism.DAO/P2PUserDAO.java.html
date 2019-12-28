@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="it"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>P2PUserDAO.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">P2P-auction-system</a> &gt; <a href="index.source.html" class="el_package">p2p.auction.mechanism.DAO</a> &gt; <span class="el_source">P2PUserDAO.java</span></div><h1>P2PUserDAO.java</h1><pre class="source lang-java linenums">package p2p.auction.mechanism.DAO;
+
+import net.tomp2p.dht.FutureGet;
+import net.tomp2p.dht.FuturePut;
+import net.tomp2p.dht.PeerDHT;
+import net.tomp2p.peers.Number160;
+import net.tomp2p.storage.Data;
+
+import p2p.auction.mechanism.User;
+
+import java.io.IOException;
+import java.util.Random;
+
+public class P2PUserDAO implements UserDAO {
+    final private PeerDHT peerDHT;
+<span class="nc" id="L16">    private static P2PUserDAO p2PUserDAO = null;</span>
+
+
+
+
+<span class="nc" id="L21">    private P2PUserDAO(PeerDHT peerDHT)  {</span>
+
+<span class="nc" id="L23">        this.peerDHT = peerDHT;</span>
+<span class="nc" id="L24">    }</span>
+
+<span class="nc" id="L26">    private static final Random RND = new Random(42L);</span>
+
+
+    /* Read operation */
+    public User read(String nickname) throws Exception {
+
+<span class="nc" id="L32">        FutureGet futureGet = this.peerDHT.get(Number160.createHash(nickname)).getLatest().start();</span>
+<span class="nc" id="L33">        futureGet.awaitUninterruptibly();</span>
+<span class="nc bnc" id="L34" title="All 2 branches missed.">        if (futureGet.isSuccess()) {</span>
+            //auction not found
+<span class="nc bnc" id="L36" title="All 2 branches missed.">            if (futureGet.isEmpty())</span>
+<span class="nc" id="L37">                return null;</span>
+<span class="nc" id="L38">            return (User) futureGet.data().object();</span>
+        }
+<span class="nc" id="L40">        return null;</span>
+    }
+
+
+    /* Update the auction's values in an async p2p system, maintaining the consistency */
+    public void create(User user) throws UserException, IOException {
+
+<span class="nc" id="L47">        FuturePut p = peerDHT.put(Number160.createHash(user.getNickname())).putIfAbsent()</span>
+<span class="nc" id="L48">                        .data(new Data(user)).start().awaitUninterruptibly();</span>
+<span class="nc bnc" id="L49" title="All 2 branches missed.">        if(!p.isSuccess())</span>
+<span class="nc" id="L50">        throw new UserException(&quot;The nickname is not available, change it.&quot;);</span>
+
+
+<span class="nc" id="L53">    }</span>
+
+
+
+    public static P2PUserDAO getInstance(PeerDHT peerDHT){
+
+<span class="nc bnc" id="L59" title="All 2 branches missed.">        if(p2PUserDAO == null) {</span>
+<span class="nc" id="L60">            p2PUserDAO = new P2PUserDAO(peerDHT);</span>
+        }
+
+<span class="nc" id="L63">        return p2PUserDAO;</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

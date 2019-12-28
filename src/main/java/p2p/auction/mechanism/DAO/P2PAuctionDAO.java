@@ -12,6 +12,7 @@ import p2p.auction.mechanism.Auction;
 import p2p.auction.mechanism.AuctionBid;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
@@ -29,6 +30,7 @@ public class P2PAuctionDAO implements AuctionDAO {
     private static final Random RND = new Random(42L);
 
 
+
     /* Read operation */
     public Auction read(String auction_name) throws Exception {
 
@@ -43,20 +45,128 @@ public class P2PAuctionDAO implements AuctionDAO {
         return null;
     }
 
+    /* read all operation */
+    public HashMap<String, Auction> readAll() throws IOException, ClassNotFoundException {
+        FutureGet futureGet = this.peerDHT.get(Number160.createHash("getAll")).getLatest().start();
+        futureGet.awaitUninterruptibly();
+        if (futureGet.isSuccess()) {
+            //auction not found
+            if (futureGet.isEmpty()) {
+                return null;
+            }
+            return (HashMap<String, Auction>) futureGet.data().object();
+        }
+        return null;
+    }
+
+
     /* Delete operation */
-    public void delete(String auction_name) {
+    public void delete(String auction_name) throws Exception {
+        this.updateGetAll(this.read(auction_name), false);
+
         peerDHT.remove(Number160.createHash(auction_name)).all().start()
                 .awaitUninterruptibly();
 
     }
 
     public void create(Auction auction) throws Exception {
+
         FuturePut p = peerDHT.put(Number160.createHash(auction.getAuctionName())).putIfAbsent()
                 .data(new Data(auction)).start().awaitUninterruptibly();
-        if(!p.isSuccess())
+
+        if (!p.isSuccess())
             throw new Exception("The nickname is not available, change it.");
 
+
+        if (this.readAll() == null) {
+            System.out.println("dsa");
+            HashMap<String, Auction> x = new HashMap<>();
+            x.put(auction.getAuctionName(), auction);
+            p = peerDHT.put(Number160.createHash("getAll")).putIfAbsent()
+                    .data(new Data(x)).start().awaitUninterruptibly();
+            if (!p.isSuccess()) {
+                System.out.println("success not");
+
+                updateGetAll(auction, true);
+            }
+
+
+        } else
+            updateGetAll(auction, true);
     }
+
+
+// if mode true, is for create, if mode false, is for removing.
+    private void updateGetAll(Auction auction, boolean mode) throws Exception {
+        Pair<Number640, Byte> pair2 = null;
+
+        for (int i = 0; i < 5; i++) {
+            Pair<Number160, Data> pair = getAndUpdateGetAll(peerDHT, auction, mode);
+            if (pair == null) {
+                updateGetAll(auction, mode);
+            }
+            FuturePut fp = peerDHT
+                    .put(Number160.createHash("getAll"))
+                    .data( pair.element1().prepareFlag(),
+                            pair.element0()).start().awaitUninterruptibly();
+            pair2 = checkVersions(fp.rawResult());
+            // 1 is PutStatus.OK_PREPARED
+            if (pair2 != null && pair2.element1() == 1) {
+                break;
+            }
+            // if not removed, a low ttl will eventually get rid of it
+            peerDHT.remove(Number160.createHash("getAll")).versionKey(pair.element0()).start()
+                    .awaitUninterruptibly();
+            Thread.sleep(RND.nextInt(500));
+        }
+        if (pair2 != null && pair2.element1() == 1) {
+            FuturePut fp = peerDHT.put(Number160.createHash("getAll"))
+                    .versionKey(pair2.element0().versionKey()).putConfirm()
+                    .data(new Data()).start().awaitUninterruptibly();
+            System.out.println("stored!: " + fp.failedReason());
+        } else {
+            System.out
+                    .println("we cannot handle this kind of inconsistency automatically, handing over the the API dev");
+        }
+
+    }
+
+    private static Pair<Number160, Data> getAndUpdateGetAll(PeerDHT peerDHT,
+                                                            Auction auction, boolean mode) throws InterruptedException, IOException, ClassNotFoundException {
+        Pair<Number640, Data> pair = null;
+        for (int i = 0; i < 5; i++) {
+            FutureGet fg = peerDHT.get(Number160.createHash("getAll")).getLatest().start()
+                    .awaitUninterruptibly();
+            // check if all the peers agree on the same latest version, if not
+            // wait a little and try again
+            pair = checkVersions(fg.rawData());
+            if (pair != null) {
+                break;
+            }
+            Thread.sleep(RND.nextInt(500));
+        }
+        // we got the latest data
+        if (pair != null) {
+            // update operation is append
+            HashMap<String, Auction> hash = (HashMap<String, Auction>) pair.element1().object();
+            if(mode == true)
+                hash.put(auction.getAuctionName(), auction);
+            //remove mode
+            else
+            hash.remove(auction.getAuctionName());
+
+            Data newData = new Data(hash);
+            Number160 v = pair.element0().versionKey();
+            long version = v.timestamp() + 1;
+            newData.addBasedOn(v);
+            //since we create a new version, we can access old versions as well
+            return new Pair<Number160, Data>(new Number160(version,
+                    newData.hash()), newData);
+
+        }
+        return null;
+    }
+
 
 
     /* Update the auction's values in an async p2p system, maintaining the consistency */
@@ -99,6 +209,7 @@ public class P2PAuctionDAO implements AuctionDAO {
             }
 
 
+
             // if not removed, a low ttl will eventually get rid of it
             peerDHT.remove(Number160.createHash(auction.getAuctionName())).versionKey(pair.element0()).start()
                     .awaitUninterruptibly();
@@ -116,6 +227,7 @@ public class P2PAuctionDAO implements AuctionDAO {
             }
 
     }
+
 
     /*
        get latest version, check if all replica peers have latest version,
@@ -210,6 +322,7 @@ public class P2PAuctionDAO implements AuctionDAO {
         }
         return new Pair<Number640, K>(latestKey, latestData);
     }
+
 
 
     public static AuctionDAO getInstance(PeerDHT peerDHT){

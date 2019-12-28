@@ -1,0 +1,12 @@
+GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,BRANCH_MISSED,BRANCH_COVERED,LINE_MISSED,LINE_COVERED,COMPLEXITY_MISSED,COMPLEXITY_COVERED,METHOD_MISSED,METHOD_COVERED
+P2P-auction-system,p2p.auction.mechanism.DAO,BidException,0,4,0,0,0,2,0,1,0,1
+P2P-auction-system,p2p.auction.mechanism.DAO,P2PAuctionDAO,53,666,24,48,15,139,24,24,0,12
+P2P-auction-system,p2p.auction.mechanism.DAO,P2PUserDAO,74,0,8,0,20,0,9,0,5,0
+P2P-auction-system,p2p.auction.mechanism.DAO,UserException,4,0,0,0,2,0,1,0,1,0
+P2P-auction-system,p2p.auction.mechanism.DAO,AuctionMechanismDAOFactory.new ObjectDataReply() {...},5,9,0,0,1,1,1,1,1,1
+P2P-auction-system,p2p.auction.mechanism.DAO,AuctionMechanismDAOFactory,22,92,5,5,6,23,6,5,2,4
+P2P-auction-system,p2p.auction.mechanism.DAO,DAOException,0,4,0,0,0,2,0,1,0,1
+P2P-auction-system,p2p.auction.mechanism,Auction,28,34,0,0,11,13,7,5,7,5
+P2P-auction-system,p2p.auction.mechanism,P2PAuction,22,0,0,0,7,0,6,0,6,0
+P2P-auction-system,p2p.auction.mechanism,User,36,18,0,0,15,7,10,1,10,1
+P2P-auction-system,p2p.auction.mechanism,AuctionBid,6,69,0,2,2,17,2,7,2,6
