@@ -9,19 +9,24 @@ import java.util.HashSet;
 
 public class Auction implements Serializable {
 
+    private Integer id;
     private User owner;
     private String auctionName;
+    private double fastPrice;
     private HashSet<PeerAddress> participants;
     private Date expirationDate;
     private ArrayList<AuctionBid> slots;
+    private Date creationDate;
 
-    public Auction(User owner, String auctionName, HashSet<PeerAddress> participants, Date expirationDate)
+    public Auction(User owner, String auctionName, Date expirationDate, double fastPrice)
     {
+        this.id = id;
         this.owner = owner;
+        this.fastPrice = fastPrice;
         this.auctionName = auctionName;
-        this.setParticipants(participants);
         this.setExpirationDate(expirationDate);
         this.slots = new ArrayList<AuctionBid>();
+        this.creationDate = new Date();
     }
 
     public User getOwner() {
@@ -61,6 +66,13 @@ public class Auction implements Serializable {
         this.expirationDate = expirationDate;
     }
 
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
 
     public ArrayList<AuctionBid> getSlots() {
         return this.slots;

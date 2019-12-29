@@ -42,12 +42,12 @@ public class P2PUserDAO implements UserDAO {
 
 
     /* Update the auction's values in an async p2p system, maintaining the consistency */
-    public void create(User user) throws UserException, IOException {
+    public void create(User user) throws UsernameExistsException, IOException {
 
         FuturePut p = peerDHT.put(Number160.createHash(user.getNickname())).putIfAbsent()
                         .data(new Data(user)).start().awaitUninterruptibly();
         if(!p.isSuccess())
-        throw new UserException("The nickname is not available, change it.");
+        throw new UsernameExistsException("The nickname is not available, change it.");
 
 
     }

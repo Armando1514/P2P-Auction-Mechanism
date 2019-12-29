@@ -12,9 +12,7 @@ import p2p.auction.mechanism.Auction;
 import p2p.auction.mechanism.AuctionBid;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 public class P2PAuctionDAO implements AuctionDAO {
 
@@ -32,9 +30,9 @@ public class P2PAuctionDAO implements AuctionDAO {
 
 
     /* Read operation */
-    public Auction read(String auction_name) throws Exception {
+    public Auction read(Integer auction_id) throws Exception {
 
-        FutureGet futureGet = this.peerDHT.get(Number160.createHash(auction_name)).getLatest().start();
+        FutureGet futureGet = this.peerDHT.get(Number160.createHash(auction_id)).getLatest().start();
         futureGet.awaitUninterruptibly();
         if (futureGet.isSuccess()) {
             //auction not found
@@ -46,7 +44,7 @@ public class P2PAuctionDAO implements AuctionDAO {
     }
 
     /* read all operation */
-    public HashMap<String, Auction> readAll() throws IOException, ClassNotFoundException {
+    public HashMap<Integer, Auction> readAll() throws IOException, ClassNotFoundException {
         FutureGet futureGet = this.peerDHT.get(Number160.createHash("getAll")).getLatest().start();
         futureGet.awaitUninterruptibly();
         if (futureGet.isSuccess()) {
@@ -54,87 +52,230 @@ public class P2PAuctionDAO implements AuctionDAO {
             if (futureGet.isEmpty()) {
                 return null;
             }
-            return (HashMap<String, Auction>) futureGet.data().object();
+            return (HashMap<Integer, Auction>) futureGet.data().object();
         }
         return null;
     }
 
 
     /* Delete operation */
-    public void delete(String auction_name) throws Exception {
-        this.updateGetAll(this.read(auction_name), false);
+    public void delete(Integer auction_id) throws Exception {
+        this.updateGetAll(this.read(auction_id), false);
 
-        peerDHT.remove(Number160.createHash(auction_name)).all().start()
+        peerDHT.remove(Number160.createHash(auction_id)).all().start()
                 .awaitUninterruptibly();
+        updateVersioningNumber(auction_id, true);
 
     }
 
-    public void create(Auction auction) throws Exception {
+    public Auction create(Auction auction) throws Exception {
 
-        FuturePut p = peerDHT.put(Number160.createHash(auction.getAuctionName())).putIfAbsent()
-                .data(new Data(auction)).start().awaitUninterruptibly();
-
-        if (!p.isSuccess())
-            throw new Exception("The nickname is not available, change it.");
-
-
+        FutureGet futureGet = this.peerDHT.get(Number160.createHash("auctionVersioningNumber")).getLatest().start();
+        futureGet.awaitUninterruptibly();
+        FuturePut p;
+        int value = 0;
+        boolean inserted = false;
+        Iterator<Map.Entry<Integer, Integer>> iterator = null;
+        HashMap<Integer, Integer> freeElements = new HashMap<>()  ;
         if (this.readAll() == null) {
-            System.out.println("dsa");
-            HashMap<String, Auction> x = new HashMap<>();
-            x.put(auction.getAuctionName(), auction);
-            p = peerDHT.put(Number160.createHash("getAll")).putIfAbsent()
-                    .data(new Data(x)).start().awaitUninterruptibly();
-            if (!p.isSuccess()) {
-                System.out.println("success not");
 
+            HashMap<Integer, Auction> x = new HashMap<>();
+            peerDHT.put(Number160.createHash("getAll")).putIfAbsent()
+                    .data(new Data(x)).start().awaitUninterruptibly();
+        }
+
+        if (futureGet.isSuccess()) {
+            //auction not found
+            if (futureGet.isEmpty()) {
+
+                p = peerDHT.put(Number160.createHash("auctionVersioningNumber")).putIfAbsent()
+                        .data(new Data(freeElements)).start().awaitUninterruptibly();
+                if (p.isSuccess()) {
+                    value = 0;
+                    auction.setId(value);
+
+                    p = peerDHT.put(Number160.createHash(value)).putIfAbsent()
+                            .data(new Data(auction)).start().awaitUninterruptibly();
+                    if (p.isSuccess()) {
+                        inserted = true;
+
+                        updateVersioningNumber(auction.getId(), false);
+                        updateGetAll(auction, true);
+                        System.out.println("INSERTED:" + value + " AUCTION " + auction.getAuctionName());
+
+                    }
+                }
+            }
+            else {
+                freeElements = (HashMap<Integer, Integer>) futureGet.data().object();
+                iterator = null;
+                iterator = freeElements.entrySet().iterator();
+
+            }
+        }
+                else
+                    throw new DAOException("Retry, a not common error is happened during the FUTUREGET.");
+
+
+
+
+
+        while(!inserted) {
+
+            if (!iterator.hasNext()) {
+                value = this.readAll().size() + RND.nextInt(500);
+                futureGet = this.peerDHT.get(Number160.createHash("auctionVersioningNumber")).getLatest().start().awaitUninterruptibly();
+                freeElements = (HashMap<Integer, Integer>) futureGet.data().object();
+                iterator = freeElements.entrySet().iterator();
+
+            } else
+                value = iterator.next().getValue();
+
+                auction.setId(value);
+            System.out.println("TRY:" + value + " AUCTION " + auction.getAuctionName());
+
+            p = peerDHT.put(Number160.createHash(value)).putIfAbsent()
+                    .data(new Data(auction)).start().awaitUninterruptibly();
+            if(p.isSuccess())
+            {
+                inserted = true;
+                updateVersioningNumber(auction.getId(), false);
                 updateGetAll(auction, true);
+
+                System.out.println("INSERTED:" + value + " AUCTION " + auction.getAuctionName());
+
             }
 
+        }
 
-        } else
-            updateGetAll(auction, true);
+
+
+
+        return auction;
     }
 
+    // if mode true, is for add a new integer available , if mode false, is for removing.
+    private void updateVersioningNumber(Integer id, boolean mode) throws Exception {
 
-// if mode true, is for create, if mode false, is for removing.
-    private void updateGetAll(Auction auction, boolean mode) throws Exception {
         Pair<Number640, Byte> pair2 = null;
+        Pair<Number160, Data> pair = null;
+        for(int i=0; i < 50; i++)
+        {
+            pair = getAndUpdateVersioningNumber( id, mode);
 
-        for (int i = 0; i < 5; i++) {
-            Pair<Number160, Data> pair = getAndUpdateGetAll(peerDHT, auction, mode);
             if (pair == null) {
-                updateGetAll(auction, mode);
+                throw new DAOException("we cannot handle this kind of inconsistency. Wait and retry after several minutes");
             }
             FuturePut fp = peerDHT
-                    .put(Number160.createHash("getAll"))
+                    .put(Number160.createHash("auctionVersioningNumber"))
                     .data( pair.element1().prepareFlag(),
                             pair.element0()).start().awaitUninterruptibly();
+
             pair2 = checkVersions(fp.rawResult());
             // 1 is PutStatus.OK_PREPARED
             if (pair2 != null && pair2.element1() == 1) {
                 break;
             }
+
+            // if not removed, a low ttl will eventually get rid of it
+            peerDHT.remove(Number160.createHash("auctionVersioningNumber")).versionKey(pair.element0()).start()
+                    .awaitUninterruptibly();
+            Thread.sleep(RND.nextInt(500));
+        }
+        if (pair2 != null && pair2.element1() == 1) {
+
+            FuturePut fp ;
+            fp = peerDHT.put(Number160.createHash("auctionVersioningNumber"))
+                    .versionKey(pair2.element0().versionKey()).putConfirm()
+                    .data(new Data()).start().awaitUninterruptibly();
+        } else {
+            throw new DAOException("we cannot handle this kind of inconsistency. Wait and retry after several minutes");
+        }
+
+    }
+
+    private  Pair<Number160, Data> getAndUpdateVersioningNumber(
+                                                            Integer id, boolean mode) throws InterruptedException, IOException, ClassNotFoundException {
+        Pair<Number640, Data> pair = null;
+        for (int i = 0; i < 50; i++) {
+            FutureGet fg = peerDHT.get(Number160.createHash("auctionVersioningNumber")).getLatest().start()
+                    .awaitUninterruptibly();
+            // check if all the peers agree on the same latest version, if not
+            // wait a little and try again
+            pair = checkVersions(fg.rawData());
+            if (pair != null) {
+                break;
+            }
+            Thread.sleep(RND.nextInt(500));
+        }
+        // we got the latest data
+        if (pair != null) {
+            // update operation is append
+            HashMap<Integer, Integer> freeElements = (HashMap<Integer, Integer>) pair.element1().object();
+                if (mode == true)
+                    freeElements.put(id, id);
+                else
+                    //remove mode
+                    freeElements.remove(id);
+
+                Data newData = new Data(freeElements);
+                Number160 v = pair.element0().versionKey();
+                long version = v.timestamp() + 1;
+                newData.addBasedOn(v);
+                //since we create a new version, we can access old versions as well
+                return new Pair<Number160, Data>(new Number160(version,
+                        newData.hash()), newData);
+            }
+
+        return null;
+    }
+
+    // if mode true, is for create, if mode false, is for removing.
+    private void updateGetAll(Auction auction, boolean mode) throws Exception {
+
+        Pair<Number640, Byte> pair2 = null;
+        Pair<Number160, Data> pair = null;
+        for(int i=0; i < 50; i++)
+        {
+            pair = getAndUpdateGetAll(auction, mode);
+
+            if (pair == null) {
+                throw new DAOException("we cannot handle this kind of inconsistency. Wait and retry after several minutes");
+            }
+            FuturePut fp = peerDHT
+                    .put(Number160.createHash("getAll"))
+                    .data( pair.element1().prepareFlag(),
+                            pair.element0()).start().awaitUninterruptibly();
+
+            pair2 = checkVersions(fp.rawResult());
+            // 1 is PutStatus.OK_PREPARED
+            if (pair2 != null && pair2.element1() == 1) {
+                break;
+            }
+
+
             // if not removed, a low ttl will eventually get rid of it
             peerDHT.remove(Number160.createHash("getAll")).versionKey(pair.element0()).start()
                     .awaitUninterruptibly();
             Thread.sleep(RND.nextInt(500));
         }
         if (pair2 != null && pair2.element1() == 1) {
-            FuturePut fp = peerDHT.put(Number160.createHash("getAll"))
+
+            FuturePut fp ;
+            fp = peerDHT.put(Number160.createHash("getAll"))
                     .versionKey(pair2.element0().versionKey()).putConfirm()
                     .data(new Data()).start().awaitUninterruptibly();
-            System.out.println("stored!: " + fp.failedReason());
         } else {
-            System.out
-                    .println("we cannot handle this kind of inconsistency automatically, handing over the the API dev");
+            throw new DAOException("we cannot handle this kind of inconsistency. Wait and retry after several minutes");
         }
+
 
     }
 
-    private static Pair<Number160, Data> getAndUpdateGetAll(PeerDHT peerDHT,
+    private  Pair<Number160, Data> getAndUpdateGetAll(
                                                             Auction auction, boolean mode) throws InterruptedException, IOException, ClassNotFoundException {
         Pair<Number640, Data> pair = null;
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 50; i++) {
             FutureGet fg = peerDHT.get(Number160.createHash("getAll")).getLatest().start()
                     .awaitUninterruptibly();
             // check if all the peers agree on the same latest version, if not
@@ -148,21 +289,23 @@ public class P2PAuctionDAO implements AuctionDAO {
         // we got the latest data
         if (pair != null) {
             // update operation is append
-            HashMap<String, Auction> hash = (HashMap<String, Auction>) pair.element1().object();
-            if(mode == true)
-                hash.put(auction.getAuctionName(), auction);
-            //remove mode
-            else
-            hash.remove(auction.getAuctionName());
 
-            Data newData = new Data(hash);
-            Number160 v = pair.element0().versionKey();
-            long version = v.timestamp() + 1;
-            newData.addBasedOn(v);
-            //since we create a new version, we can access old versions as well
-            return new Pair<Number160, Data>(new Number160(version,
-                    newData.hash()), newData);
+            HashMap<Integer, Auction> hash = (HashMap<Integer, Auction>) pair.element1().object();
+            if(hash != null) {
+    if (mode == true)
+        hash.put(auction.getId(), auction);
+        //remove mode
+    else
+        hash.remove(auction.getId());
 
+    Data newData = new Data(hash);
+    Number160 v = pair.element0().versionKey();
+    long version = v.timestamp() + 1;
+    newData.addBasedOn(v);
+    //since we create a new version, we can access old versions as well
+    return new Pair<Number160, Data>(new Number160(version,
+            newData.hash()), newData);
+        }
         }
         return null;
     }
@@ -175,13 +318,13 @@ public class P2PAuctionDAO implements AuctionDAO {
         Pair<Number160, Data> pair = null;
         for(int i=0; i < 5; i++)
         {
-             pair = getAndUpdate(peerDHT, auction, newBid);
+             pair = getAndUpdate( auction, newBid);
 
             if (pair == null) {
-                throw new BidException("we cannot handle this kind of inconsistency. Wait and retry after several minutes");
+                throw new DAOException("we cannot handle this kind of inconsistency. Wait and retry after several minutes");
             }
             FuturePut fp = peerDHT
-                    .put(Number160.createHash(auction.getAuctionName()))
+                    .put(Number160.createHash(auction.getId()))
                     .data( pair.element1().prepareFlag(),
                             pair.element0()).start().awaitUninterruptibly();
 
@@ -199,9 +342,9 @@ public class P2PAuctionDAO implements AuctionDAO {
                     AuctionBid lastBid = lastAuction.getSlots().get(size-1);
                     // if is lower, remove it.
                     if (!lastBid.isSmallerThan(newBid)) {
-                        peerDHT.remove(Number160.createHash(auction.getAuctionName())).versionKey(pair.element0()).start()
+                        peerDHT.remove(Number160.createHash(auction.getId())).versionKey(pair.element0()).start()
                                 .awaitUninterruptibly();
-                        throw new BidException("Your bid: " + newBid.getBidValue() + " is lower than the last one: " + lastBid.getBidValue() + ", update the auction status.");
+                        throw new HigherBidExistenceException("Your bid: " + newBid.getBidValue() + " is lower than the last one: " + lastBid.getBidValue() + ", update the auction status.");
                     }
                 }
 
@@ -211,19 +354,19 @@ public class P2PAuctionDAO implements AuctionDAO {
 
 
             // if not removed, a low ttl will eventually get rid of it
-            peerDHT.remove(Number160.createHash(auction.getAuctionName())).versionKey(pair.element0()).start()
+            peerDHT.remove(Number160.createHash(auction.getId())).versionKey(pair.element0()).start()
                     .awaitUninterruptibly();
             Thread.sleep(RND.nextInt(500));
             }
             if (pair2 != null && pair2.element1() == 1) {
 
                 FuturePut fp ;
-                         fp = peerDHT.put(Number160.createHash(auction.getAuctionName()))
+                         fp = peerDHT.put(Number160.createHash(auction.getId()))
                         .versionKey(pair2.element0().versionKey()).putConfirm()
                         .data(new Data()).start().awaitUninterruptibly();
 
             } else {
-                throw new BidException("we cannot handle this kind of inconsistency. Wait and retry after several minutes");
+                throw new DAOException("we cannot handle this kind of inconsistency. Wait and retry after several minutes");
             }
 
     }
@@ -234,15 +377,15 @@ public class P2PAuctionDAO implements AuctionDAO {
        if not wait and try again, when you have the latest version do modification.
        In this case, write the new bind and assign the slot to the user.
        */
-    private static Pair<Number160, Data> getAndUpdate(PeerDHT peerDHT,
-                                                      Auction auction, AuctionBid newBid) throws BidException, InterruptedException, ClassNotFoundException,
+    private  Pair<Number160, Data> getAndUpdate(
+                                                      Auction auction, AuctionBid newBid) throws HigherBidExistenceException, InterruptedException, ClassNotFoundException,
             IOException {
         Pair<Number640, Data> pair = null;
 
         for(int i = 0; i < 5; i++)
         {
             // get the latest version of the auction.
-            FutureGet fg =  peerDHT.get(Number160.createHash(auction.getAuctionName())).getLatest().start().awaitUninterruptibly();
+            FutureGet fg =  peerDHT.get(Number160.createHash(auction.getId())).getLatest().start().awaitUninterruptibly();
             // check if all the peers agree on the same latest version, if not, wait a little and try again
             pair = checkVersions(fg.rawData());
             if(pair != null)
@@ -291,14 +434,14 @@ public class P2PAuctionDAO implements AuctionDAO {
             else
             {
                 //does it means that our bid is lower than the last bid, so we need to make another bid.
-                throw new BidException("Your bid: "+ newBid.getBidValue()+" is lower than the last one: "+ lastBid.getBidValue() + ", update the auction status.");
+                throw new HigherBidExistenceException("Your bid: "+ newBid.getBidValue()+" is lower than the last one: "+ lastBid.getBidValue() + ", update the auction status.");
             }
         }
         return null;
     }
 
 
-    private static <K> Pair<Number640, K> checkVersions(Map<PeerAddress, Map<Number640, K>> rawData)
+    private  <K> Pair<Number640, K> checkVersions(Map<PeerAddress, Map<Number640, K>> rawData)
     {
         Number640 latestKey = null;
         K latestData = null;

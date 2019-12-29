@@ -16,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class P2PAuctionDAOTests {
 
-    private static final int NUMBER_OF_PEERS = 5;
+    private static final int NUMBER_OF_PEERS = 10;
 
     private static AuctionDAO[] peers;
 
@@ -77,7 +77,7 @@ public class P2PAuctionDAOTests {
 
                     int rnd = random.ints(1,(NUMBER_OF_PEERS)).findFirst().getAsInt();
                     User user = new User("user"+finalI,"password", new Double(1), null, null);
-                    Auction auctionTest = new Auction(user, "test-"+finalI, null, new Date());
+                    Auction auctionTest = new Auction(user, "test-"+finalI, new Date(), new Double(1));
 
                     try {
                         peers[rnd].create(auctionTest);
@@ -100,7 +100,7 @@ public class P2PAuctionDAOTests {
         i = 0;
 
         //check if all the bids are in dec order.
-        HashMap<String, Auction> auctions = peers[0].readAll();
+        HashMap<Integer, Auction> auctions = peers[0].readAll();
 
         assertEquals(NUMBER_OF_PEERS, auctions.size() );
 
@@ -111,11 +111,12 @@ public class P2PAuctionDAOTests {
     protected void testUpdate() throws Exception {
 
         User user = new User("userTestUpdate","password", new Double(1), null, null);
-        Auction auctionTest = new Auction(user, "testUpdate", null, new Date());
-        peers[0].create(auctionTest);
+        Auction auctionTest = new Auction(user, "testUpdate", new Date(),new Double(1));
+        auctionTest = peers[0].create(auctionTest);
         int i = 0;
         while( i < NUMBER_OF_PEERS ) {
 
+            Auction finalAuctionTest = auctionTest;
             new Thread(new Runnable() {
                 @Override
                 public void run() {
@@ -125,9 +126,9 @@ public class P2PAuctionDAOTests {
                     int rnd = random.ints(1,(NUMBER_OF_PEERS)).findFirst().getAsInt();
                     User user = new User("test"+rnd,"password", new Double(1), null, null);
 
-                    AuctionBid bid = new AuctionBid(auctionTest, user, new Double(rnd));
+                    AuctionBid bid = new AuctionBid(finalAuctionTest, user, new Double(rnd));
                     try {
-                        peers[rnd].update(auctionTest, bid);
+                        peers[rnd].update(finalAuctionTest, bid);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -149,7 +150,7 @@ public class P2PAuctionDAOTests {
         //check if all the bids are in dec order.
         ArrayList<AuctionBid> auctionSlot = null;
         try {
-            auctionSlot = peers[0].read("testUpdate").getSlots();
+            auctionSlot = peers[0].read(auctionTest.getId()).getSlots();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -182,14 +183,14 @@ public class P2PAuctionDAOTests {
     protected void testReadLastBid () throws Exception {
 
         User user = new User("userReadLastBid","password", new Double(1), null, null);
-        Auction auctionTest = new Auction(user, "testReadLastBid", null, new Date());
-        peers[0].create(auctionTest);
+        Auction auctionTest = new Auction(user, "testReadLastBid", new Date(), new Double(1));
+        auctionTest = peers[0].create(auctionTest);
 
         AuctionBid bid = new AuctionBid(auctionTest, user, new Double(3));
         peers[0].update(auctionTest, bid);
-        peers[0].read("testReadLastBid");
-        int size = peers[0].read("testReadLastBid").getSlots().size();
-        AuctionBid bidLast = peers[0].read("testReadLastBid").getSlots().get(size - 1);
+        peers[0].read(auctionTest.getId());
+        int size = peers[0].read(auctionTest.getId()).getSlots().size();
+        AuctionBid bidLast = peers[0].read(auctionTest.getId()).getSlots().get(size - 1);
         assertEquals(bidLast.getBidValue(), new Double(3));
 
     }
@@ -197,16 +198,17 @@ public class P2PAuctionDAOTests {
     @Test
     protected void testReadEmptyAuction () throws Exception {
 
-        assertNull(peers[0].read("Empty Test"));
+        assertNull(peers[0].read(Integer.MAX_VALUE));
 
     }
 static int ia = 0;
     // we need to execute it at the end.
     @AfterEach
      void testDelete() throws Exception {
-        HashMap<String, Auction> auctions = peers[0].readAll();
+        HashMap<Integer, Auction> auctions = peers[0].readAll();
         ia++;
-        for (String key: auctions.keySet()) {
+        for (Integer key: auctions.keySet()) {
+            System.out.println(key);
             peers[0].delete(key);
         }
     }
