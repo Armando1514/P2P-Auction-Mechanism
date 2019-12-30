@@ -5,14 +5,10 @@ import net.tomp2p.dht.FuturePut;
 import net.tomp2p.dht.PeerDHT;
 import net.tomp2p.peers.Number160;
 import net.tomp2p.peers.Number640;
-import net.tomp2p.peers.PeerAddress;
 import net.tomp2p.storage.Data;
 import net.tomp2p.utils.Pair;
-import p2p.auction.mechanism.Auction;
-import p2p.auction.mechanism.AuctionBid;
 
 import java.io.IOException;
-import java.util.Map;
 import java.util.Random;
 
 public class P2PAuctionBidDAO implements AuctionBidDAO {

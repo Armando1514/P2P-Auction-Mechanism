@@ -2,10 +2,7 @@ package p2p.auction.mechanism.DAO;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import p2p.auction.mechanism.Auction;
-import p2p.auction.mechanism.AuctionBid;
 import p2p.auction.mechanism.MessageListener;
-import p2p.auction.mechanism.User;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -49,7 +46,7 @@ public class P2PAuctionBidDAOTests {
 
             auctionDAO = AuctionMechanismDAOFactory.instantiate(0, "127.0.0.1", new MessageListenerImpl(0), true).getAuctionDAO();
 
-           int  i = 0;
+            int  i = 0;
             while( i  < NUMBER_OF_PEERS )
             {
 

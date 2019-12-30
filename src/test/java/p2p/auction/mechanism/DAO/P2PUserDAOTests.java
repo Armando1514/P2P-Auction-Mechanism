@@ -3,7 +3,6 @@ package p2p.auction.mechanism.DAO;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import p2p.auction.mechanism.MessageListener;
-import p2p.auction.mechanism.User;
 
 import java.io.IOException;
 

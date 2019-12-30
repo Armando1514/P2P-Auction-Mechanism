@@ -1,11 +1,6 @@
 package p2p.auction.mechanism.DAO;
 
-import p2p.auction.mechanism.Auction;
-import p2p.auction.mechanism.AuctionBid;
-import p2p.auction.mechanism.User;
-
 import java.io.IOException;
-import java.util.Date;
 import java.util.HashMap;
 
 public interface AuctionDAO extends  DAOTools {

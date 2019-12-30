@@ -64,7 +64,7 @@ public class P2PAuctionDAOTests {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        }
+    }
 
     //check if all the auction  created in parallel from different peers are in the hash map.
     @Test
@@ -190,11 +190,11 @@ public class P2PAuctionDAOTests {
 
     // we need to execute it at the end.
     @AfterEach
-     void testDelete() throws Exception {
+    void testDelete() throws Exception {
         HashMap<Integer, Auction> auctions = peers[0].readAll();
         for (Integer key: auctions.keySet()) {
             if(key != null)
-            peers[0].delete(key);
+                peers[0].delete(key);
         }
     }
 

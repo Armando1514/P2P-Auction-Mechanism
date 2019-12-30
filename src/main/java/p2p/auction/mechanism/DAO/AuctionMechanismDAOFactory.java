@@ -8,7 +8,6 @@ import net.tomp2p.p2p.PeerBuilder;
 import net.tomp2p.peers.Number160;
 import net.tomp2p.peers.PeerAddress;
 import net.tomp2p.rpc.ObjectDataReply;
-import p2p.auction.mechanism.AuctionBid;
 import p2p.auction.mechanism.MessageListener;
 
 import java.net.InetAddress;
@@ -22,7 +21,7 @@ public class AuctionMechanismDAOFactory implements DAOFactory{
     private static AuctionMechanismDAOFactory mechanism = null;
 
     final private Peer peer;
-    final private PeerDHT peerDHT;
+    final  private PeerDHT peerDHT;
     final private int DEFAULT_MASTER_PORT = 4000;
 
 
@@ -81,7 +80,7 @@ public class AuctionMechanismDAOFactory implements DAOFactory{
     }
 
     // static method to get the  Singleton class
-    public AuctionMechanismDAOFactory getInstance() {
+    public static AuctionMechanismDAOFactory getInstance() {
 
         return mechanism;
     }
@@ -101,7 +100,7 @@ public class AuctionMechanismDAOFactory implements DAOFactory{
     }
 
 
-    public AuctionDAO getAuctionDAO()
+    public  AuctionDAO getAuctionDAO()
     {
         if(auction == null) {
             auction = P2PAuctionDAO.getInstance(peerDHT);
@@ -109,7 +108,7 @@ public class AuctionMechanismDAOFactory implements DAOFactory{
         return auction;
     }
 
-    public UserDAO getUserDAO()
+    public  UserDAO getUserDAO()
     {
         if(user == null) {
             user = P2PUserDAO.getInstance(peerDHT);
@@ -117,7 +116,7 @@ public class AuctionMechanismDAOFactory implements DAOFactory{
         return user;
     }
 
-    public AuctionBidDAO getAuctionBidDAO()
+    public  AuctionBidDAO getAuctionBidDAO()
     {
         if(bid == null) {
             bid = P2PAuctionBidDAO.getInstance(peerDHT);
@@ -125,7 +124,7 @@ public class AuctionMechanismDAOFactory implements DAOFactory{
         return bid;
     }
 
-    public PeerAddress getPeerAddress()
+    public  PeerAddress getPeerAddress()
     {
         return peerDHT.peer().peerAddress();
     }

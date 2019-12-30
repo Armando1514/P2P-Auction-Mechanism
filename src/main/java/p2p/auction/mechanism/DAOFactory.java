@@ -1,5 +1,8 @@
 package p2p.auction.mechanism;
 
+import p2p.auction.mechanism.DAO.Auction;
+import p2p.auction.mechanism.DAO.User;
+
 import java.util.Date;
 
 public interface DAOFactory {

@@ -2,14 +2,9 @@ package p2p.auction.mechanism;
 
 import java.util.Date;
 import java.util.ArrayList;
-import java.util.HashSet;
 
-import net.tomp2p.dht.FutureGet;
-import net.tomp2p.peers.Number160;
-import net.tomp2p.peers.PeerAddress;
-import net.tomp2p.storage.Data;
-import p2p.auction.mechanism.DAO.DAOFactory;
-import p2p.auction.mechanism.DAO.P2PAuctionDAO;
+import p2p.auction.mechanism.DAO.Auction;
+import p2p.auction.mechanism.DAO.User;
 
 import java.util.Random;
 
