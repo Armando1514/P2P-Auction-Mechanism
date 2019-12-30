@@ -8,6 +8,7 @@ import net.tomp2p.p2p.PeerBuilder;
 import net.tomp2p.peers.Number160;
 import net.tomp2p.peers.PeerAddress;
 import net.tomp2p.rpc.ObjectDataReply;
+import p2p.auction.mechanism.AuctionBid;
 import p2p.auction.mechanism.MessageListener;
 
 import java.net.InetAddress;
@@ -17,11 +18,13 @@ public class AuctionMechanismDAOFactory implements DAOFactory{
     // static variable single_instance of type Singleton
     private static UserDAO user = null;
     private static AuctionDAO auction = null;
+    private static AuctionBidDAO bid = null;
     private static AuctionMechanismDAOFactory mechanism = null;
 
     final private Peer peer;
     final private PeerDHT peerDHT;
     final private int DEFAULT_MASTER_PORT = 4000;
+
 
 
     // private constructor restricted to this class itself
@@ -112,5 +115,18 @@ public class AuctionMechanismDAOFactory implements DAOFactory{
             user = P2PUserDAO.getInstance(peerDHT);
         }
         return user;
+    }
+
+    public AuctionBidDAO getAuctionBidDAO()
+    {
+        if(bid == null) {
+            bid = P2PAuctionBidDAO.getInstance(peerDHT);
+        }
+        return bid;
+    }
+
+    public PeerAddress getPeerAddress()
+    {
+        return peerDHT.peer().peerAddress();
     }
 }

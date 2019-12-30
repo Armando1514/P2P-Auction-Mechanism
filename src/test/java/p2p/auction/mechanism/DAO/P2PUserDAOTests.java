@@ -2,13 +2,12 @@ package p2p.auction.mechanism.DAO;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import p2p.auction.mechanism.Auction;
 import p2p.auction.mechanism.MessageListener;
 import p2p.auction.mechanism.User;
 
 import java.io.IOException;
-import java.util.Date;
-import java.util.HashMap;
+
+
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 
@@ -21,6 +20,7 @@ public class P2PUserDAOTests {
     private static UserDAO[] peers;
 
     private static CountDownLatch c3 = new CountDownLatch(NUMBER_OF_PEERS);
+    private static CountDownLatch c4 = new CountDownLatch(NUMBER_OF_PEERS);
 
 
     @BeforeAll
@@ -59,7 +59,7 @@ public class P2PUserDAOTests {
 
     //check if all the user  created in parallel from different peers are without duplication.
     @Test
-    protected void testUpdateGetAll() throws Exception {
+    protected void testCreate() throws Exception {
 
         String userSaved[] = new String[NUMBER_OF_PEERS];
 
@@ -97,10 +97,51 @@ public class P2PUserDAOTests {
 
         //check if all the bids are in dec order.
         for (i = 0; i < NUMBER_OF_PEERS; i++) {
-            System.out.println(userSaved[i]);
             assertNotNull(peers[0].read(userSaved[i]));
 
         }
 
     }
+
+    //check if all the user  updated in parallel from different peers are without duplication.
+    @Test
+    protected void testUpdate() throws Exception {
+
+        int i = 0;
+        final int[] peersAvailable = {NUMBER_OF_PEERS};
+        User user = new User("usdsaer","password", new Double(1), null, null);
+        peers[0].create(user);
+
+        while( i < NUMBER_OF_PEERS ) {
+
+            int finalI = i;
+            User finalUser = user;
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+
+                    try {
+
+                        finalUser.setUnreadedMessages("test-"+finalI);
+                        peers[0].update(finalUser);
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        peersAvailable[0]--;
+                    }
+
+                    c4.countDown();
+
+                }
+            }).start();
+
+            i ++;
+        }
+        c4.await();
+
+
+        // wait until all the threads are done
+        user = peers[0].read(user.getNickname());
+        assertEquals(peersAvailable[0], user.getUnreadedMessages().size());
+}
 }

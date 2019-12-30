@@ -1,6 +1,11 @@
 package p2p.auction.mechanism;
 
+import net.tomp2p.peers.PeerAddress;
+
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
 
 public class User implements Serializable {
     private String nickname;
@@ -8,6 +13,7 @@ public class User implements Serializable {
     private Double money;
     private String latestAuctionsJoined;
     private String myAuctions;
+    private ArrayList<String> unreadedMessages;
 
     public User(String nickname, String password, Double money, String latestAuctionJoined, String myAuctions) {
         this.nickname = nickname;
@@ -15,6 +21,7 @@ public class User implements Serializable {
         this.money = money;
         this.latestAuctionsJoined = latestAuctionJoined;
         this.myAuctions = myAuctions;
+        this.unreadedMessages = new ArrayList<>();
     }
 
 
@@ -51,6 +58,17 @@ public class User implements Serializable {
         return this;
     }
 
+    public ArrayList<String> getUnreadedMessages() {
+        return this.unreadedMessages;
+    }
+
+    public void setUnreadedMessages(ArrayList<String> unreadedMessages) {
+        this.unreadedMessages = unreadedMessages;
+    }
+    public void setUnreadedMessages(String unreadedMessages) {
+        this.unreadedMessages.add(unreadedMessages);
+    }
+
     public String getMyAuctions() {
         return myAuctions;
     }
@@ -58,4 +76,37 @@ public class User implements Serializable {
     public void setMyAuctions(String myAuctions) {
         this.myAuctions = myAuctions;
     }
+
+    public User updateElements(User newUser)
+    {
+        this.password = newUser.password;
+        this.money = newUser.money;
+        this.latestAuctionsJoined = newUser.latestAuctionsJoined;
+        this.myAuctions = newUser.myAuctions;
+
+        if(!this.unreadedMessages.isEmpty())
+        {
+            if(!newUser.unreadedMessages.isEmpty())
+            {
+
+                ArrayList<String> unreaded = newUser.getUnreadedMessages();
+                int i = 0;
+                while (i < unreaded.size())
+                {
+                    String message = unreaded.get(i);
+                    if(!this.unreadedMessages.contains(message))
+                        this.unreadedMessages.add(message);
+                    i++;
+
+                }
+            }
+        }
+        else {
+            this.setUnreadedMessages(newUser.getUnreadedMessages());
+
+        }
+
+        return this;
+    }
+
 }

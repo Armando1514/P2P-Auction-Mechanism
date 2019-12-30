@@ -60,10 +60,12 @@ public class P2PAuctionDAO implements AuctionDAO {
 
     /* Delete operation */
     public void delete(Integer auction_id) throws Exception {
+
         this.updateGetAll(this.read(auction_id), false);
 
         peerDHT.remove(Number160.createHash(auction_id)).all().start()
                 .awaitUninterruptibly();
+
         updateVersioningNumber(auction_id, true);
 
     }
@@ -75,8 +77,8 @@ public class P2PAuctionDAO implements AuctionDAO {
         FuturePut p;
         int value = 0;
         boolean inserted = false;
-        Iterator<Map.Entry<Integer, Integer>> iterator = null;
-        HashMap<Integer, Integer> freeElements = new HashMap<>()  ;
+        Iterator<Integer> iterator = null;
+        HashSet<Integer> freeElements = new HashSet<Integer>()  ;
         if (this.readAll() == null) {
 
             HashMap<Integer, Auction> x = new HashMap<>();
@@ -101,15 +103,15 @@ public class P2PAuctionDAO implements AuctionDAO {
 
                         updateVersioningNumber(auction.getId(), false);
                         updateGetAll(auction, true);
-                        System.out.println("INSERTED:" + value + " AUCTION " + auction.getAuctionName());
+
+                        System.out.println("id: "+auction.getId() + "INSERTED:" + value + " AUCTION " + auction.getAuctionName());
 
                     }
                 }
             }
             else {
-                freeElements = (HashMap<Integer, Integer>) futureGet.data().object();
-                iterator = null;
-                iterator = freeElements.entrySet().iterator();
+                freeElements = (HashSet<Integer>) futureGet.data().object();
+                iterator = freeElements.iterator();
 
             }
         }
@@ -125,14 +127,13 @@ public class P2PAuctionDAO implements AuctionDAO {
             if (!iterator.hasNext()) {
                 value = this.readAll().size() + RND.nextInt(500);
                 futureGet = this.peerDHT.get(Number160.createHash("auctionVersioningNumber")).getLatest().start().awaitUninterruptibly();
-                freeElements = (HashMap<Integer, Integer>) futureGet.data().object();
-                iterator = freeElements.entrySet().iterator();
+                freeElements = (HashSet<Integer>) futureGet.data().object();
+                iterator = freeElements.iterator();
 
             } else
-                value = iterator.next().getValue();
+                value = iterator.next();
 
                 auction.setId(value);
-            System.out.println("TRY:" + value + " AUCTION " + auction.getAuctionName());
 
             p = peerDHT.put(Number160.createHash(value)).putIfAbsent()
                     .data(new Data(auction)).start().awaitUninterruptibly();
@@ -142,7 +143,6 @@ public class P2PAuctionDAO implements AuctionDAO {
                 updateVersioningNumber(auction.getId(), false);
                 updateGetAll(auction, true);
 
-                System.out.println("INSERTED:" + value + " AUCTION " + auction.getAuctionName());
 
             }
 
@@ -211,9 +211,9 @@ public class P2PAuctionDAO implements AuctionDAO {
         // we got the latest data
         if (pair != null) {
             // update operation is append
-            HashMap<Integer, Integer> freeElements = (HashMap<Integer, Integer>) pair.element1().object();
+            HashSet<Integer> freeElements = (HashSet<Integer>) pair.element1().object();
                 if (mode == true)
-                    freeElements.put(id, id);
+                    freeElements.add(id);
                 else
                     //remove mode
                     freeElements.remove(id);
@@ -261,8 +261,9 @@ public class P2PAuctionDAO implements AuctionDAO {
         }
         if (pair2 != null && pair2.element1() == 1) {
 
-            FuturePut fp ;
-            fp = peerDHT.put(Number160.createHash("getAll"))
+            HashMap<Integer, Auction> hash = (HashMap<Integer, Auction>) pair.element1().object();
+
+            peerDHT.put(Number160.createHash("getAll"))
                     .versionKey(pair2.element0().versionKey()).putConfirm()
                     .data(new Data()).start().awaitUninterruptibly();
         } else {
@@ -313,40 +314,25 @@ public class P2PAuctionDAO implements AuctionDAO {
 
 
     /* Update the auction's values in an async p2p system, maintaining the consistency */
-    public void update(Auction auction, AuctionBid newBid) throws Exception {
+    public void update(Auction newAuction) throws Exception {
         Pair<Number640, Byte> pair2 = null;
         Pair<Number160, Data> pair = null;
         for(int i=0; i < 5; i++)
         {
-             pair = getAndUpdate( auction, newBid);
+             pair = getAndUpdate(newAuction);
 
             if (pair == null) {
                 throw new DAOException("we cannot handle this kind of inconsistency. Wait and retry after several minutes");
             }
+            // id never changes
             FuturePut fp = peerDHT
-                    .put(Number160.createHash(auction.getId()))
+                    .put(Number160.createHash(newAuction.getId()))
                     .data( pair.element1().prepareFlag(),
                             pair.element0()).start().awaitUninterruptibly();
 
             pair2 = checkVersions(fp.rawResult());
             // 1 is PutStatus.OK_PREPARED
             if (pair2 != null && pair2.element1() == 1) {
-                Auction lastAuction = (Auction) pair.element1().object();
-
-                //get the last Bid
-                if((lastAuction.getSlots().size() - 1) > 0) {
-                    int size;
-                    size = lastAuction.getSlots().size() - 1;
-
-                    // check if the bid that i'm going to put, is bigger that the last bid inserted.
-                    AuctionBid lastBid = lastAuction.getSlots().get(size-1);
-                    // if is lower, remove it.
-                    if (!lastBid.isSmallerThan(newBid)) {
-                        peerDHT.remove(Number160.createHash(auction.getId())).versionKey(pair.element0()).start()
-                                .awaitUninterruptibly();
-                        throw new HigherBidExistenceException("Your bid: " + newBid.getBidValue() + " is lower than the last one: " + lastBid.getBidValue() + ", update the auction status.");
-                    }
-                }
 
                 break;
             }
@@ -354,16 +340,21 @@ public class P2PAuctionDAO implements AuctionDAO {
 
 
             // if not removed, a low ttl will eventually get rid of it
-            peerDHT.remove(Number160.createHash(auction.getId())).versionKey(pair.element0()).start()
+            peerDHT.remove(Number160.createHash(newAuction.getId())).versionKey(pair.element0()).start()
                     .awaitUninterruptibly();
             Thread.sleep(RND.nextInt(500));
             }
             if (pair2 != null && pair2.element1() == 1) {
 
                 FuturePut fp ;
-                         fp = peerDHT.put(Number160.createHash(auction.getId()))
+                         fp = peerDHT.put(Number160.createHash(newAuction.getId()))
                         .versionKey(pair2.element0().versionKey()).putConfirm()
                         .data(new Data()).start().awaitUninterruptibly();
+                         if(fp.isSuccess())
+                         {
+                             // update the global list
+                             updateGetAll((Auction)pair.element1().object(), true);
+                         }
 
             } else {
                 throw new DAOException("we cannot handle this kind of inconsistency. Wait and retry after several minutes");
@@ -377,15 +368,14 @@ public class P2PAuctionDAO implements AuctionDAO {
        if not wait and try again, when you have the latest version do modification.
        In this case, write the new bind and assign the slot to the user.
        */
-    private  Pair<Number160, Data> getAndUpdate(
-                                                      Auction auction, AuctionBid newBid) throws HigherBidExistenceException, InterruptedException, ClassNotFoundException,
+    private  Pair<Number160, Data> getAndUpdate( Auction newAuction) throws InterruptedException, ClassNotFoundException,
             IOException {
         Pair<Number640, Data> pair = null;
 
         for(int i = 0; i < 5; i++)
         {
             // get the latest version of the auction.
-            FutureGet fg =  peerDHT.get(Number160.createHash(auction.getId())).getLatest().start().awaitUninterruptibly();
+            FutureGet fg =  peerDHT.get(Number160.createHash(newAuction.getId())).getLatest().start().awaitUninterruptibly();
             // check if all the peers agree on the same latest version, if not, wait a little and try again
             pair = checkVersions(fg.rawData());
             if(pair != null)
@@ -397,31 +387,16 @@ public class P2PAuctionDAO implements AuctionDAO {
 
         }
 
-        boolean checkValue;
         //we got the latest data
         if(pair != null)
         {
-            int size ;
-            Auction lastAuction = (Auction) pair.element1().object();
-            AuctionBid lastBid = null;
-            //get the last Bid
-            if((lastAuction.getSlots().size() - 1) > 0) {
-                size = lastAuction.getSlots().size() - 1;
-                lastBid = lastAuction.getSlots().get(size);
-                //if the new bid's value, is less than the last one, the flag is false, and throw an exception.
-                checkValue = lastBid.isSmallerThan(newBid);
-            }
+             Auction last = (Auction) pair.element1().object();
 
-            else{
-                // this is the first bid
-                checkValue = true;
-            }
+             //the problem of collision is related only to the participants field, because is editable from all the peers.
+               last = last.updateElements(newAuction);
 
-            // does it means that we can add the slots, because the new bid is bigger than the last
-            if(checkValue) {
-                // we add the new bid to the Auction.
-                lastAuction.getSlots().add(newBid);
-                Data newData = new Data(lastAuction);
+                Data newData = new Data(last);
+
                 Number160 v = pair.element0().versionKey();
                 long version = v.timestamp() + 1;
                 newData.addBasedOn(v);
@@ -431,40 +406,12 @@ public class P2PAuctionDAO implements AuctionDAO {
                 return new Pair<Number160, Data>(new Number160(version,
                         newData.hash()), newData);
             }
-            else
-            {
-                //does it means that our bid is lower than the last bid, so we need to make another bid.
-                throw new HigherBidExistenceException("Your bid: "+ newBid.getBidValue()+" is lower than the last one: "+ lastBid.getBidValue() + ", update the auction status.");
-            }
-        }
+
         return null;
     }
 
 
-    private  <K> Pair<Number640, K> checkVersions(Map<PeerAddress, Map<Number640, K>> rawData)
-    {
-        Number640 latestKey = null;
-        K latestData = null;
-        for ( Map.Entry<PeerAddress, Map<Number640, K>> entry : rawData.entrySet())
-        {
-            if (latestData == null && latestKey == null)
-            {
-                latestData = entry.getValue().values().iterator().next();
-                latestKey = entry.getValue().keySet().iterator().next();
-            }
-            else
-            {
-                if(!latestKey.equals(entry.getValue().keySet().iterator().next())
-                        || !latestData.equals(entry.getValue().values()
-                        .iterator().next()))
-                {
-                    return null;
-                }
-            }
 
-        }
-        return new Pair<Number640, K>(latestKey, latestData);
-    }
 
 
 

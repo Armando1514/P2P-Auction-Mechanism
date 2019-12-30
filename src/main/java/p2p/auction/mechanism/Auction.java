@@ -6,6 +6,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.Iterator;
 
 public class Auction implements Serializable {
 
@@ -18,6 +19,7 @@ public class Auction implements Serializable {
     private ArrayList<AuctionBid> slots;
     private Date creationDate;
 
+
     public Auction(User owner, String auctionName, Date expirationDate, double fastPrice)
     {
         this.id = id;
@@ -27,8 +29,41 @@ public class Auction implements Serializable {
         this.setExpirationDate(expirationDate);
         this.slots = new ArrayList<AuctionBid>();
         this.creationDate = new Date();
+        participants = new HashSet<PeerAddress>();
     }
 
+
+
+
+    public Auction updateElements(Auction newAuction)
+    {
+
+        this.setAuctionName(newAuction.getAuctionName());
+        this.setFastPrice(newAuction.getFastPrice());
+
+        if(!this.getParticipants().isEmpty())
+        {
+            if(!newAuction.getParticipants().isEmpty())
+            {
+                HashSet<PeerAddress> lastParticipants = this.getParticipants();
+                HashSet<PeerAddress> newParticipants = newAuction.getParticipants();
+                Iterator<PeerAddress> it = newParticipants.iterator();
+                while (it.hasNext())
+                {
+
+                    PeerAddress address = it.next();
+                    if(!lastParticipants.contains(address))
+                        lastParticipants.add(address);
+
+                }
+            }
+        }
+        else {
+            this.setParticipants(newAuction.getParticipants());
+        }
+
+        return this;
+    }
     public User getOwner() {
         return this.owner;
     }
@@ -37,6 +72,9 @@ public class Auction implements Serializable {
         this.owner = owner;
         return this;
     }
+
+
+
 
     public void setNickname(User owner) {
         this.owner = owner;
@@ -62,6 +100,14 @@ public class Auction implements Serializable {
         return this.expirationDate;
     }
 
+    public double getFastPrice() {
+        return fastPrice;
+    }
+
+    public void setFastPrice(double fastPrice) {
+        this.fastPrice = fastPrice;
+    }
+
     public void setExpirationDate(Date expirationDate) {
         this.expirationDate = expirationDate;
     }
@@ -74,6 +120,7 @@ public class Auction implements Serializable {
         this.id = id;
     }
 
+
     public ArrayList<AuctionBid> getSlots() {
         return this.slots;
     }
@@ -81,4 +128,6 @@ public class Auction implements Serializable {
     public void setSlot(AuctionBid bid) {
         this.slots.add(bid);
     }
+
+
 }
