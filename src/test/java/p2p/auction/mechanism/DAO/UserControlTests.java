@@ -3,6 +3,8 @@ package p2p.auction.mechanism.DAO;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import p2p.auction.mechanism.Control.UserControl;
+import p2p.auction.mechanism.Control.UserMechanism;
 import p2p.auction.mechanism.MessageListener;
 
 import java.io.IOException;
@@ -10,7 +12,7 @@ import java.io.IOException;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;
 
-public class UserTests {
+public class UserControlTests {
 
 
     @BeforeAll
@@ -44,8 +46,9 @@ public class UserTests {
     {
         User x = new User();
         x.setNickname("storeUser");
-        x.storeUser();
-        assertNotNull(x.getUser("storeUser"));
+        UserMechanism control = new UserControl();
+        control.storeUser(x);
+        assertNotNull(control.findUser("storeUser"));
     }
 
     @Test
@@ -54,10 +57,11 @@ public class UserTests {
         User x = new User();
         x.setNickname("storeUser");
         x.setMoney(new Double(4));
-        x.storeUser();
+        UserMechanism control = new UserControl();
+        control.storeUser(x);
         x.setMoney(new Double(5));
-        x.updateUser();
-        assertEquals(x.getUser("storeUser").getMoney(),new Double(5));
+        control.updateUser(x);
+        assertEquals(control.findUser("storeUser").getMoney(),new Double(5));
     }
 
 

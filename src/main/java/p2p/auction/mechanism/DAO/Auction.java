@@ -19,6 +19,13 @@ public class Auction implements Serializable {
     private ArrayList<AuctionBid> slots;
     private Date creationDate;
 
+    public Auction()
+    {
+        participants = new HashSet<PeerAddress>();
+        this.slots = new ArrayList<AuctionBid>();
+        this.creationDate = new Date();
+
+    }
 
     public Auction(User owner, String auctionName, Date expirationDate, double fastPrice)
     {

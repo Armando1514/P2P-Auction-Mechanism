@@ -3,6 +3,8 @@ import org.beryx.textio.*;
 
 import javax.swing.*;
 
+import p2p.auction.mechanism.Control.UserControl;
+import p2p.auction.mechanism.Control.UserMechanism;
 import p2p.auction.mechanism.DAO.User;
 
 public class AuthenticationGUI {
@@ -11,6 +13,9 @@ public class AuthenticationGUI {
 
     private TextTerminal<?> terminal ;
     private TextIO textIO;
+    private User userSaved;
+    private String keyStrokeLogin = "ctrl L";
+    private String keyStrokeRegister = "ctrl R";
 
 public   AuthenticationGUI(TextIO textIO, TextTerminal<?> terminal)
 {
@@ -19,34 +24,54 @@ public   AuthenticationGUI(TextIO textIO, TextTerminal<?> terminal)
 }
 
 
-    public void authenticationGUIDisplay() {
+    public User authenticationGUIDisplay() {
 
 
-        String keyStrokeLogin = "ctrl L";
-        String keyStrokeRegister = "ctrl R";
-        String keyStrokeQuit = "ctrl Q";
+
+        final boolean[] authenticationDisableStrokes = {false};
 
         TerminalProperties<?> props = terminal.getProperties();
-        boolean quitStroke = terminal.registerHandler(keyStrokeQuit, t -> {
 
-            this.quitGUI();
-
-            return new ReadHandlerData(ReadInterruptionStrategy.Action.CONTINUE);
-        });
 
         boolean registerStroke = terminal.registerHandler(keyStrokeRegister, t -> {
-            this.registerGUI();
+            if (!authenticationDisableStrokes[0]){
+                userSaved = this.registerGUI();
+            if (userSaved != null) {
+                authenticationDisableStrokes[0] = true;
+                return new ReadHandlerData(ReadInterruptionStrategy.Action.ABORT).withRedrawRequired(true);
+
+            } else
+                terminal.println("A strange error occurs, try after.");
+        }
+        else {
+                terminal.resetToBookmark("auction");
+                terminal.println("You are not in the login session, command not allowed here.");
+            }
+
             return new ReadHandlerData(ReadInterruptionStrategy.Action.RESTART).withRedrawRequired(true);
+
         });
         boolean loginStroke = terminal.registerHandler(keyStrokeLogin, t -> {
 
-            this.loginGUI();
+            if (!authenticationDisableStrokes[0]){
+                userSaved = this.loginGUI();
+                if (userSaved != null) {
+                    authenticationDisableStrokes[0] = true;
+                    return new ReadHandlerData(ReadInterruptionStrategy.Action.ABORT).withRedrawRequired(true);
 
+                } else
+                    terminal.println("A strange error occurs, try after.");
+            }
+            else {
+                terminal.resetToBookmark("auction");
+                terminal.println("You are not in the login session, command not allowed here.");
+
+            }
             return new ReadHandlerData(ReadInterruptionStrategy.Action.RESTART).withRedrawRequired(true);
         });
 
 
-        boolean hasHandlers = loginStroke || registerStroke || quitStroke ;
+        boolean hasHandlers = loginStroke || registerStroke  ;
         if(!hasHandlers) {
             terminal.println("No handlers can be registered.");
         } else {
@@ -61,9 +86,7 @@ public   AuthenticationGUI(TextIO textIO, TextTerminal<?> terminal)
             props.setPromptBold(false);
 
             terminal.println("--------------------------------------------------------------------------------");
-            if(quitStroke) {
-                terminal.println("Press " + keyStrokeQuit + " to exit");
-            }
+
             if(registerStroke) {
                 terminal.println("Press " + keyStrokeRegister + " to register");
             }
@@ -79,12 +102,17 @@ public   AuthenticationGUI(TextIO textIO, TextTerminal<?> terminal)
         }
         terminal.resetToBookmark("authentication");
 
-        textIO.newStringInputReader()
-                .withNumberedPossibleValues(keyStrokeLogin, keyStrokeRegister, keyStrokeQuit)
-                .read("Waiting a command ...");
+try {
+    textIO.newStringInputReader().withPattern("(?i)(?<= |^)exit(?= |$)").read("\nWrite 'exit' to terminate...");
+}
+catch (ReadAbortedException e)
+{
+    return userSaved;
+}
+        this.quitGUI();
 
         textIO.dispose();
-
+        return null;
 
     }
 
@@ -102,13 +130,13 @@ public   AuthenticationGUI(TextIO textIO, TextTerminal<?> terminal)
 
         boolean nickRight = false;
         User user = new User();
-
+        UserMechanism control = new UserControl();
         while(!nickRight) {
             String nickname = textIO.newStringInputReader()
                     .withMinLength(4).withPattern("^(?![0-9]*$)[a-zA-Z0-9]+$")
                     .read("Username");
             user.setNickname(nickname.toLowerCase());
-            nickRight = user.storeUser();
+            nickRight = control.storeUser(user);
             if(!nickRight)
                 terminal.println("Username already exists, change it!");
 
@@ -120,14 +148,16 @@ public   AuthenticationGUI(TextIO textIO, TextTerminal<?> terminal)
         terminal.println();
         user.setPassword(password);
 
-        double money = textIO.newIntInputReader()
-                .withMinVal(1)
+        double money = textIO.newDoubleInputReader()
+                .withMinVal(new Double(1))
                 .read("Initial money");
         user.setMoney(new Double(money));
-        if(user.updateUser())
+        if(control.updateUser(user)) {
             terminal.println("User correctly created.");
-
-        return user;
+            return user;
+        }
+        else
+            return null;
     }
 
     private User loginGUI()
@@ -140,7 +170,7 @@ public   AuthenticationGUI(TextIO textIO, TextTerminal<?> terminal)
 
         terminal.println("LOGIN:");
         props.setPromptColor("#00ff00");
-
+        UserMechanism control = new UserControl();
         boolean nickRight = false;
         User user = new User() ;
 
@@ -148,7 +178,7 @@ public   AuthenticationGUI(TextIO textIO, TextTerminal<?> terminal)
             String nickname = textIO.newStringInputReader()
                     .withMinLength(4).withPattern("^(?![0-9]*$)[a-zA-Z0-9]+$")
                     .read("Username");
-            user = user.getUser(nickname.toLowerCase());
+            user = control.findUser(nickname.toLowerCase());
             if(user == null)
                 terminal.println("There is no user with this nickname, if you want to register press CTRL R.");
             else
@@ -176,11 +206,16 @@ public   AuthenticationGUI(TextIO textIO, TextTerminal<?> terminal)
     private void quitGUI()
     {
         int confirmed = JOptionPane.showConfirmDialog(null,
-                "Are you sure you want to exit the program?", "Exit Program Message Box",
+                "Are you sure you want to exit the program?", "Exit message",
                 JOptionPane.YES_NO_OPTION);
 
         if (confirmed == JOptionPane.YES_OPTION) {
             System.exit(0);
+        }
+        else{
+            terminal.resetToBookmark("reset");
+            this.authenticationGUIDisplay();
+
         }
 
     }

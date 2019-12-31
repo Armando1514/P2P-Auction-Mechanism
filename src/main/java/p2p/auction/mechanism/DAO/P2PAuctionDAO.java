@@ -101,7 +101,6 @@ public class P2PAuctionDAO implements AuctionDAO {
                         updateVersioningNumber(auction.getId(), false);
                         updateGetAll(auction, true);
 
-                        System.out.println("id: "+auction.getId() + "INSERTED:" + value + " AUCTION " + auction.getAuctionName());
 
                     }
                 }

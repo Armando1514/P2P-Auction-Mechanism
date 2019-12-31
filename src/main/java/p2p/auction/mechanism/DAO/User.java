@@ -3,7 +3,7 @@ package p2p.auction.mechanism.DAO;
 import java.io.Serializable;
 import java.util.ArrayList;
 
-public class User implements Serializable {
+public class User implements Serializable{
     private String nickname;
     private String password;
     private Double money;
@@ -24,44 +24,7 @@ public class User implements Serializable {
         this.unreadedMessages = new ArrayList<>();
     }
 
-    public boolean storeUser()
-    {
-        UserDAO userDAO = AuctionMechanismDAOFactory.getInstance().getUserDAO();
-        try {
-            userDAO.create(this);
-        } catch (UsernameExistsException e) {
-            return false;
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
 
-        return true;
-    }
-
-    public boolean updateUser()
-    {
-        UserDAO userDAO = AuctionMechanismDAOFactory.getInstance().getUserDAO();
-
-        try {
-            userDAO.update(this);
-            return true;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-
-    public User getUser(String nickname)
-    {
-        UserDAO userDAO = AuctionMechanismDAOFactory.getInstance().getUserDAO();
-        try {
-            return userDAO.read(nickname);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
 
     public String getLatestAuctionsJoined() {
         return latestAuctionsJoined;

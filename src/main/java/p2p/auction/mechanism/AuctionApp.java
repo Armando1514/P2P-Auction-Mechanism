@@ -1,11 +1,14 @@
 package p2p.auction.mechanism;
 
+import com.sun.org.apache.xerces.internal.dom.AbortException;
 import org.beryx.textio.TextIO;
 import org.beryx.textio.TextIoFactory;
 import org.beryx.textio.TextTerminal;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 import p2p.auction.mechanism.DAO.AuctionMechanismDAOFactory;
+import p2p.auction.mechanism.DAO.User;
+import p2p.auction.mechanism.GUI.AuctionGUI;
 import p2p.auction.mechanism.GUI.AuthenticationGUI;
 
 public class AuctionApp {
@@ -47,8 +50,16 @@ public class AuctionApp {
             parser.parseArgument(args);
              TextIO textIO = TextIoFactory.getTextIO();
             TextTerminal<?> terminal =  textIO.getTextTerminal();
-            new AuthenticationGUI(textIO, terminal).authenticationGUIDisplay();
-        } catch (Exception e) {
+            terminal.setBookmark("reset");
+
+           User user = new AuthenticationGUI(textIO, terminal).authenticationGUIDisplay();
+            terminal.resetToBookmark("reset");
+
+            new AuctionGUI(textIO,terminal, user).AuctionGUIDisplay();
+
+        }
+
+        catch (Exception e) {
             e.printStackTrace();
         }
     }
