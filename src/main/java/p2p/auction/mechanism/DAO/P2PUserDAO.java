@@ -70,7 +70,7 @@ public class P2PUserDAO implements UserDAO {
                     .data( pair.element1().prepareFlag(),
                             pair.element0()).start().awaitUninterruptibly();
 
-            pair2 = checkVersions(fp.rawResult());
+            pair2 = DAOTools.checkVersions(fp.rawResult());
             // 1 is PutStatus.OK_PREPARED
             if (pair2 != null && pair2.element1() == 1) {
 
@@ -109,7 +109,7 @@ public class P2PUserDAO implements UserDAO {
             // get the latest version of the auction.
             FutureGet fg =  peerDHT.get(Number160.createHash(newUser.getNickname())).getLatest().start().awaitUninterruptibly();
             // check if all the peers agree on the same latest version, if not, wait a little and try again
-            pair = checkVersions(fg.rawData());
+            pair = DAOTools.checkVersions(fg.rawData());
             if(pair != null)
             {
                 break;

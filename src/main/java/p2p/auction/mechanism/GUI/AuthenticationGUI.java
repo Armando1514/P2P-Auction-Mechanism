@@ -3,7 +3,6 @@ import org.beryx.textio.*;
 
 import javax.swing.*;
 
-import p2p.auction.mechanism.Control.UserControl;
 import p2p.auction.mechanism.Control.UserMechanism;
 import p2p.auction.mechanism.DAO.User;
 
@@ -130,13 +129,12 @@ catch (ReadAbortedException e)
 
         boolean nickRight = false;
         User user = new User();
-        UserMechanism control = new UserControl();
         while(!nickRight) {
             String nickname = textIO.newStringInputReader()
                     .withMinLength(4).withPattern("^(?![0-9]*$)[a-zA-Z0-9]+$")
                     .read("Username");
             user.setNickname(nickname.toLowerCase());
-            nickRight = control.storeUser(user);
+            nickRight = UserMechanism.storeUser(user);
             if(!nickRight)
                 terminal.println("Username already exists, change it!");
 
@@ -152,7 +150,7 @@ catch (ReadAbortedException e)
                 .withMinVal(new Double(1))
                 .read("Initial money");
         user.setMoney(new Double(money));
-        if(control.updateUser(user)) {
+        if(UserMechanism.updateUser(user)) {
             terminal.println("User correctly created.");
             return user;
         }
@@ -170,7 +168,6 @@ catch (ReadAbortedException e)
 
         terminal.println("LOGIN:");
         props.setPromptColor("#00ff00");
-        UserMechanism control = new UserControl();
         boolean nickRight = false;
         User user = new User() ;
 
@@ -178,7 +175,7 @@ catch (ReadAbortedException e)
             String nickname = textIO.newStringInputReader()
                     .withMinLength(4).withPattern("^(?![0-9]*$)[a-zA-Z0-9]+$")
                     .read("Username");
-            user = control.findUser(nickname.toLowerCase());
+            user = UserMechanism.findUser(nickname.toLowerCase());
             if(user == null)
                 terminal.println("There is no user with this nickname, if you want to register press CTRL R.");
             else

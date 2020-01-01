@@ -18,6 +18,12 @@ public class Auction implements Serializable {
     private Date expirationDate;
     private ArrayList<AuctionBid> slots;
     private Date creationDate;
+    private AuctionStatus status;
+    public enum AuctionStatus {
+        ENDED,
+        ONGOING;
+    }
+
 
     public Auction()
     {
@@ -34,8 +40,10 @@ public class Auction implements Serializable {
         this.fastPrice = fastPrice;
         this.auctionName = auctionName;
         this.setExpirationDate(expirationDate);
+        checkStatus();
         this.slots = new ArrayList<AuctionBid>();
         this.creationDate = new Date();
+        Date currentDate = new Date();
         participants = new HashSet<PeerAddress>();
     }
 
@@ -116,7 +124,22 @@ public class Auction implements Serializable {
     }
 
     public void setExpirationDate(Date expirationDate) {
+
         this.expirationDate = expirationDate;
+        checkStatus();
+
+    }
+    public boolean checkStatus()
+    {
+        Date currentDate = new Date();
+
+        if(currentDate.after(expirationDate)) {
+            this.status = AuctionStatus.ENDED;
+            return false;
+        }
+        else
+            this.status = AuctionStatus.ONGOING;
+        return true;
     }
 
     public int getId() {
@@ -136,5 +159,11 @@ public class Auction implements Serializable {
         this.slots.add(bid);
     }
 
+    public AuctionStatus getStatus() {
+        return status;
+    }
 
+    public void setStatus(AuctionStatus status) {
+        this.status = status;
+    }
 }

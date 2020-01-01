@@ -7,30 +7,31 @@ public class User implements Serializable{
     private String nickname;
     private String password;
     private Double money;
-    private String latestAuctionsJoined;
-    private String myAuctions;
+    private Auction latestAuctionsJoined;
+    private ArrayList<Auction> myAuctions;
     private ArrayList<String> unreadedMessages;
 
     public User() {
         this.unreadedMessages = new ArrayList<>();
+        this.myAuctions = new ArrayList<>();
 
     }
-    public User(String nickname, String password, Double money, String latestAuctionJoined, String myAuctions) {
+    public User(String nickname, String password, Double money, Auction latestAuctionJoined, Auction myAuctions) {
         this.nickname = nickname;
         this.password = password;
         this.money = money;
         this.latestAuctionsJoined = latestAuctionJoined;
-        this.myAuctions = myAuctions;
+        this.myAuctions = new ArrayList<>();
         this.unreadedMessages = new ArrayList<>();
     }
 
 
 
-    public String getLatestAuctionsJoined() {
+    public Auction getLatestAuctionsJoined() {
         return latestAuctionsJoined;
     }
 
-    public void setLatestAuctionsJoined(String latestAuctionsJoined) {
+    public void setLatestAuctionsJoined(Auction latestAuctionsJoined) {
         this.latestAuctionsJoined = latestAuctionsJoined;
     }
 
@@ -70,12 +71,13 @@ public class User implements Serializable{
         this.unreadedMessages.add(unreadedMessages);
     }
 
-    public String getMyAuctions() {
+    public ArrayList<Auction> getMyAuctions() {
         return myAuctions;
     }
 
-    public void setMyAuctions(String myAuctions) {
-        this.myAuctions = myAuctions;
+    public void setMyAuctions(Auction myAuction) {
+
+        this.myAuctions.add(myAuction);
     }
 
     public User updateElements(User newUser)

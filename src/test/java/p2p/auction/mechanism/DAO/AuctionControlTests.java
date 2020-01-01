@@ -1,18 +1,18 @@
 package p2p.auction.mechanism.DAO;
 
-
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import p2p.auction.mechanism.Control.UserMechanism;
+import p2p.auction.mechanism.Control.AuctionMechanism;
+
 import p2p.auction.mechanism.MessageListener;
 
 import java.io.IOException;
+import java.util.Date;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;
 
-public class UserControlTests {
-
+public class AuctionControlTests {
 
     @BeforeAll
     static void initPeer() throws Exception {
@@ -41,24 +41,34 @@ public class UserControlTests {
     }
 
     @Test
-    public void storeUserTest()
+    public void createAuctionTest()
     {
-        User x = new User();
-        x.setNickname("storeUser");
-        UserMechanism.storeUser(x);
-        assertNotNull(UserMechanism.findUser("storeUser"));
+        Auction x = new Auction();
+        x.setAuctionName("createAuction");
+        x = AuctionMechanism.createAuction(x);
+        assertNotNull(AuctionMechanism.findAuction(x.getId()));
     }
 
     @Test
-    public void updateUserTest()
+    public void findAuctionTest()
     {
-        User x = new User();
-        x.setNickname("storeUser");
-        x.setMoney(new Double(4));
-        UserMechanism.storeUser(x);
-        x.setMoney(new Double(5));
-        UserMechanism.updateUser(x);
-        assertEquals(UserMechanism.findUser("storeUser").getMoney(),new Double(5));
+        Auction x = new Auction();
+        x.setAuctionName("createAuction");
+        x = AuctionMechanism.createAuction(x);
+        assertNotNull(AuctionMechanism.findAuction(x.getId()));
+    }
+
+
+    /* should also update the auction status */
+    @Test
+    public void updateAuctionTest()
+    {
+        Auction x = new Auction();
+        x.setAuctionName("updateAuctionTest");
+        x.setExpirationDate(new Date());
+        x = AuctionMechanism.createAuction(x);
+        x = AuctionMechanism.findAuction(x.getId());
+        assertEquals(x.getStatus(), Auction.AuctionStatus.ENDED);
     }
 
 

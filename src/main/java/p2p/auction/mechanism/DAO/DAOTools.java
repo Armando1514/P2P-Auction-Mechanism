@@ -9,7 +9,7 @@ import java.util.Map;
 public interface  DAOTools {
 
 
-    default  <K> Pair<Number640, K> checkVersions(Map<PeerAddress, Map<Number640, K>> rawData)
+    static  <K> Pair<Number640, K> checkVersions(Map<PeerAddress, Map<Number640, K>> rawData)
     {
         Number640 latestKey = null;
         K latestData = null;
