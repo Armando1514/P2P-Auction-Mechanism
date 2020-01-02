@@ -15,6 +15,7 @@ public class AuthenticationGUI {
     private User userSaved;
     private String keyStrokeLogin = "ctrl L";
     private String keyStrokeRegister = "ctrl R";
+    static final String keyStrokeQuit = "ctrl Q";
 
 public   AuthenticationGUI(TextIO textIO, TextTerminal<?> terminal)
 {
@@ -27,16 +28,22 @@ public   AuthenticationGUI(TextIO textIO, TextTerminal<?> terminal)
 
 
 
+
         final boolean[] authenticationDisableStrokes = {false};
 
         TerminalProperties<?> props = terminal.getProperties();
 
+        boolean quitStroke = terminal.registerHandler(keyStrokeQuit, t -> {
+            this.quitGUI();
+            return new ReadHandlerData(ReadInterruptionStrategy.Action.ABORT);
+        });
 
         boolean registerStroke = terminal.registerHandler(keyStrokeRegister, t -> {
             if (!authenticationDisableStrokes[0]){
                 userSaved = this.registerGUI();
             if (userSaved != null) {
                 authenticationDisableStrokes[0] = true;
+                UserMechanism.changeUserAddress(userSaved);
                 return new ReadHandlerData(ReadInterruptionStrategy.Action.ABORT).withRedrawRequired(true);
 
             } else
@@ -56,6 +63,8 @@ public   AuthenticationGUI(TextIO textIO, TextTerminal<?> terminal)
                 userSaved = this.loginGUI();
                 if (userSaved != null) {
                     authenticationDisableStrokes[0] = true;
+                    UserMechanism.changeUserAddress(userSaved);
+
                     return new ReadHandlerData(ReadInterruptionStrategy.Action.ABORT).withRedrawRequired(true);
 
                 } else
@@ -86,12 +95,13 @@ public   AuthenticationGUI(TextIO textIO, TextTerminal<?> terminal)
 
             terminal.println("--------------------------------------------------------------------------------");
 
-            if(registerStroke) {
+
                 terminal.println("Press " + keyStrokeRegister + " to register");
-            }
-            if(loginStroke) {
+
                 terminal.println("Press " + keyStrokeLogin + " to login");
-            }
+
+                terminal.println("Press " + keyStrokeQuit + " to quit.");
+
             terminal.println("You can use these key combinations at any moment during your authentication entry session.");
             terminal.println("--------------------------------------------------------------------------------");
 

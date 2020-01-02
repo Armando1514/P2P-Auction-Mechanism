@@ -1,24 +1,27 @@
 package p2p.auction.mechanism.DAO;
 
 import net.tomp2p.peers.PeerAddress;
+import p2p.auction.mechanism.Control.AuctionMechanism;
 
+import java.io.IOException;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Iterator;
+import java.util.*;
 
 public class Auction implements Serializable {
 
     private Integer id;
     private User owner;
     private String auctionName;
-    private double fastPrice;
-    private HashSet<PeerAddress> participants;
+    private Double fastPrice;
+    private HashMap<String,PeerAddress> participants;
     private Date expirationDate;
     private ArrayList<AuctionBid> slots;
     private Date creationDate;
     private AuctionStatus status;
+
+
+
+
     public enum AuctionStatus {
         ENDED,
         ONGOING;
@@ -27,9 +30,10 @@ public class Auction implements Serializable {
 
     public Auction()
     {
-        participants = new HashSet<PeerAddress>();
+        participants = new HashMap<String, PeerAddress>();
         this.slots = new ArrayList<AuctionBid>();
         this.creationDate = new Date();
+        this.status=AuctionStatus.ONGOING;
 
     }
 
@@ -40,14 +44,15 @@ public class Auction implements Serializable {
         this.fastPrice = fastPrice;
         this.auctionName = auctionName;
         this.setExpirationDate(expirationDate);
-        checkStatus();
         this.slots = new ArrayList<AuctionBid>();
         this.creationDate = new Date();
         Date currentDate = new Date();
-        participants = new HashSet<PeerAddress>();
+        participants = new HashMap<String,PeerAddress>();
     }
 
-
+    public Date getCreationDate() {
+        return creationDate;
+    }
 
 
     public Auction updateElements(Auction newAuction)
@@ -55,20 +60,22 @@ public class Auction implements Serializable {
 
         this.setAuctionName(newAuction.getAuctionName());
         this.setFastPrice(newAuction.getFastPrice());
+        if(newAuction.getStatus() == AuctionStatus.ENDED)
+        this.setStatus(newAuction.getStatus());
 
         if(!this.getParticipants().isEmpty())
         {
             if(!newAuction.getParticipants().isEmpty())
             {
-                HashSet<PeerAddress> lastParticipants = this.getParticipants();
-                HashSet<PeerAddress> newParticipants = newAuction.getParticipants();
-                Iterator<PeerAddress> it = newParticipants.iterator();
+                HashMap<String, PeerAddress> lastParticipants = this.getParticipants();
+                HashMap<String, PeerAddress> newParticipants = newAuction.getParticipants();
+                Iterator<String> it = newParticipants.keySet().iterator();
                 while (it.hasNext())
                 {
 
-                    PeerAddress address = it.next();
-                    if(!lastParticipants.contains(address))
-                        lastParticipants.add(address);
+                    String usersId = it.next();
+                    if(!lastParticipants.containsKey(usersId))
+                        lastParticipants.put(usersId, newParticipants.get(usersId));
 
                 }
             }
@@ -79,6 +86,9 @@ public class Auction implements Serializable {
 
         return this;
     }
+
+
+
     public User getOwner() {
         return this.owner;
     }
@@ -91,10 +101,6 @@ public class Auction implements Serializable {
 
 
 
-    public void setNickname(User owner) {
-        this.owner = owner;
-    }
-
     public String getAuctionName() {
         return this.auctionName;
     }
@@ -103,23 +109,28 @@ public class Auction implements Serializable {
         this.auctionName = auctionName;
     }
 
-    public HashSet<PeerAddress> getParticipants() {
+    public HashMap<String, PeerAddress> getParticipants() {
         return this.participants;
     }
 
-    public void setParticipants(HashSet<PeerAddress> participants) {
+    public void setParticipants(String userId,PeerAddress participants) {
+        this.participants.put(userId,participants);
+    }
+    private void setParticipants(HashMap<String, PeerAddress> participants) {
         this.participants = participants;
     }
-
     public Date getExpirationDate() {
         return this.expirationDate;
     }
 
-    public double getFastPrice() {
+    public Double getFastPrice() {
         return fastPrice;
     }
 
-    public void setFastPrice(double fastPrice) {
+    public void setFastPrice(Double fastPrice) {
+        if(fastPrice == null || fastPrice == -1)
+            this.fastPrice = null;
+        else
         this.fastPrice = fastPrice;
     }
 
@@ -131,14 +142,30 @@ public class Auction implements Serializable {
     }
     public boolean checkStatus()
     {
-        Date currentDate = new Date();
-
-        if(currentDate.after(expirationDate)) {
-            this.status = AuctionStatus.ENDED;
+        if(this.status == AuctionStatus.ENDED) {
             return false;
         }
-        else
-            this.status = AuctionStatus.ONGOING;
+
+        if(this.expirationDate != null) {
+            Date currentDate = new Date();
+            if (currentDate.after(expirationDate)) {
+
+                this.status = AuctionStatus.ENDED;
+                String message = "The auction: "+this.getAuctionName()+"(id: "+this.getId()+"), is over.";
+
+                try {
+                    AuctionMechanism.noticePeers(this,message);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (ClassNotFoundException e) {
+                    e.printStackTrace();
+                }
+                return false;
+            } else
+                this.status = AuctionStatus.ONGOING;
+
+            return true;
+        }
         return true;
     }
 
@@ -155,9 +182,6 @@ public class Auction implements Serializable {
         return this.slots;
     }
 
-    public void setSlot(AuctionBid bid) {
-        this.slots.add(bid);
-    }
 
     public AuctionStatus getStatus() {
         return status;

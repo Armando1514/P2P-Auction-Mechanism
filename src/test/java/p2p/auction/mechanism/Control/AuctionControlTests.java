@@ -1,9 +1,11 @@
-package p2p.auction.mechanism.DAO;
+package p2p.auction.mechanism.Control;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import p2p.auction.mechanism.Control.AuctionMechanism;
 
+import p2p.auction.mechanism.DAO.*;
 import p2p.auction.mechanism.MessageListener;
 
 import java.io.IOException;
@@ -13,9 +15,9 @@ import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;
 
 public class AuctionControlTests {
-
     @BeforeAll
     static void initPeer() throws Exception {
+
         class MessageListenerImpl implements MessageListener {
             int peerid;
 
@@ -31,8 +33,7 @@ public class AuctionControlTests {
         }
         try {
 
-            AuctionMechanismDAOFactory.instantiate(0, "127.0.0.1", new MessageListenerImpl(0), true);
-
+            AuctionMechanismDAOFactory.instantiate(0, "127.0.0.1", new MessageListenerImpl(0), true).getAuctionDAO();
 
         } catch (IOException e) {
             // TODO Auto-generated catch block
@@ -40,10 +41,13 @@ public class AuctionControlTests {
         }
     }
 
+
     @Test
     public void createAuctionTest()
     {
         Auction x = new Auction();
+        User user = new User();
+        x.setOwner(user);
         x.setAuctionName("createAuction");
         x = AuctionMechanism.createAuction(x);
         assertNotNull(AuctionMechanism.findAuction(x.getId()));
@@ -54,8 +58,29 @@ public class AuctionControlTests {
     {
         Auction x = new Auction();
         x.setAuctionName("createAuction");
+        User user = new User();
+        x.setOwner(user);
         x = AuctionMechanism.createAuction(x);
         assertNotNull(AuctionMechanism.findAuction(x.getId()));
+    }
+
+    @Test
+    public void placeABidForEndedAuctionTest()
+    {
+
+        Auction x = new Auction();
+        x.setAuctionName("placeABidForEndedAuctionTest");
+        x.setExpirationDate(new Date());
+        User user = new User();
+        x.setOwner(user);
+        x = AuctionMechanism.createAuction(x);
+
+
+        user.setNickname("placeABidForEndedAuctionUser");
+        AuctionBid bid = new AuctionBid(x, user, 4d);
+        Assertions.assertThrows(AuctionEndedException.class, () -> {
+            AuctionMechanism.placeABid(bid);
+        });
     }
 
 
@@ -65,6 +90,8 @@ public class AuctionControlTests {
     {
         Auction x = new Auction();
         x.setAuctionName("updateAuctionTest");
+        User user = new User();
+        x.setOwner(user);
         x.setExpirationDate(new Date());
         x = AuctionMechanism.createAuction(x);
         x = AuctionMechanism.findAuction(x.getId());

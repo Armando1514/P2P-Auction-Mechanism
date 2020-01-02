@@ -83,7 +83,7 @@ public class P2PAuctionDAOTests {
                     Random random = new Random();
 
                     int rnd = random.ints(1,(NUMBER_OF_PEERS)).findFirst().getAsInt();
-                    User user = new User("user"+finalI,"password", new Double(1), null, null);
+                    User user = new User("user"+finalI,"password", new Double(1), null);
                     Auction auctionTest = new Auction(user, "test-"+finalI, new Date(), new Double(1));
 
                     try {
@@ -119,7 +119,7 @@ public class P2PAuctionDAOTests {
     @Test
     protected void testUpdate() throws Exception {
 
-        User user = new User("user1", "password", new Double(1), null, null);
+        User user = new User("user1", "password", new Double(1), null);
         Auction auctionTest = new Auction(user, "test-0", new Date(), new Double(1));
         peers[0].create(auctionTest);
         auctionTest.setAuctionName("test-new");
@@ -137,20 +137,21 @@ public class P2PAuctionDAOTests {
 
         int i = 0;
         final int[] peersAvailable = {NUMBER_OF_PEERS};
-        User user = new User("usdsaer","password", new Double(1), null, null);
+        User user = new User("usdsaer","password", new Double(1), null);
         Auction auctionTest = new Auction(user, "testsdwe", new Date(), new Double(1));
         peers[0].create(auctionTest);
 
         while( i < NUMBER_OF_PEERS ) {
 
             int finalI = i;
+
             new Thread(new Runnable() {
                 @Override
                 public void run() {
 
                     try {
 
-                        auctionTest.getParticipants().add(peerAddresses[finalI]);
+                        auctionTest.getParticipants().put(String.valueOf(finalI),peerAddresses[finalI]);
                         peers[0].update(auctionTest);
 
                     } catch (Exception e) {
@@ -167,13 +168,10 @@ public class P2PAuctionDAOTests {
         }
         c3.await();
 
-        auctionTest.getParticipants().add(peerAddresses[0]);
-        peers[0].update(auctionTest);
 
         // wait until all the threads are done
 
-        //check if all the bids are in dec order.
-        HashSet<PeerAddress> participants = peers[0].read(auctionTest.getId()).getParticipants();
+        HashMap<String, PeerAddress> participants = peers[0].read(auctionTest.getId()).getParticipants();
         assertEquals(peersAvailable[0], participants.size());
     }
 

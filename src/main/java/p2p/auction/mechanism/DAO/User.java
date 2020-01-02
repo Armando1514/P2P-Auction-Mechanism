@@ -7,32 +7,34 @@ public class User implements Serializable{
     private String nickname;
     private String password;
     private Double money;
-    private Auction latestAuctionsJoined;
+    private ArrayList<Auction> auctionsJoined;
     private ArrayList<Auction> myAuctions;
     private ArrayList<String> unreadedMessages;
 
     public User() {
         this.unreadedMessages = new ArrayList<>();
+        this.auctionsJoined = new ArrayList<>();
         this.myAuctions = new ArrayList<>();
 
     }
-    public User(String nickname, String password, Double money, Auction latestAuctionJoined, Auction myAuctions) {
+
+    public User(String nickname, String password, Double money, Auction myAuctions) {
         this.nickname = nickname;
         this.password = password;
         this.money = money;
-        this.latestAuctionsJoined = latestAuctionJoined;
+        this.auctionsJoined = new ArrayList<>();
         this.myAuctions = new ArrayList<>();
         this.unreadedMessages = new ArrayList<>();
     }
 
 
 
-    public Auction getLatestAuctionsJoined() {
-        return latestAuctionsJoined;
+    public ArrayList<Auction>  getAuctionsJoined() {
+        return auctionsJoined;
     }
 
-    public void setLatestAuctionsJoined(Auction latestAuctionsJoined) {
-        this.latestAuctionsJoined = latestAuctionsJoined;
+    public void setAuctionsJoined(Auction latestAuctionsJoined) {
+        this.auctionsJoined.add(latestAuctionsJoined);
     }
 
     public Double getMoney() {
@@ -82,10 +84,10 @@ public class User implements Serializable{
 
     public User updateElements(User newUser)
     {
-        this.password = newUser.password;
-        this.money = newUser.money;
-        this.latestAuctionsJoined = newUser.latestAuctionsJoined;
-        this.myAuctions = newUser.myAuctions;
+        this.password = newUser.getPassword();
+        this.money = newUser.getMoney();
+        this.auctionsJoined = newUser.getAuctionsJoined();
+        this.myAuctions = newUser.getMyAuctions();
 
         if(!this.unreadedMessages.isEmpty())
         {

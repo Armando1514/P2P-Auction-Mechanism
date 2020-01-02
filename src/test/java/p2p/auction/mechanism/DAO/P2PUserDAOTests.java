@@ -1,5 +1,6 @@
 package p2p.auction.mechanism.DAO;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import p2p.auction.mechanism.MessageListener;
@@ -7,6 +8,7 @@ import p2p.auction.mechanism.MessageListener;
 import java.io.IOException;
 
 
+import java.util.HashMap;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 
@@ -75,7 +77,7 @@ public class P2PUserDAOTests {
                     Random random = new Random();
 
                     int rnd = random.ints(1, (NUMBER_OF_PEERS)).findFirst().getAsInt();
-                    User user = new User("user" + duplicateN, "password", new Double(1), null, null);
+                    User user = new User("user" + duplicateN, "password", new Double(1), null);
                     try {
                         peers[rnd].create(user);
                     } catch (Exception e) {
@@ -102,45 +104,4 @@ public class P2PUserDAOTests {
 
     }
 
-    //check if all the user  updated in parallel from different peers are without duplication.
-    @Test
-    protected void testUpdate() throws Exception {
-
-        int i = 0;
-        final int[] peersAvailable = {NUMBER_OF_PEERS};
-        User user = new User("usdsaer","password", new Double(1), null, null);
-        peers[0].create(user);
-
-        while( i < NUMBER_OF_PEERS ) {
-
-            int finalI = i;
-            User finalUser = user;
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-
-                    try {
-
-                        finalUser.setUnreadedMessages("test-"+finalI);
-                        peers[0].update(finalUser);
-
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        peersAvailable[0]--;
-                    }
-
-                    c4.countDown();
-
-                }
-            }).start();
-
-            i ++;
-        }
-        c4.await();
-
-
-        // wait until all the threads are done
-        user = peers[0].read(user.getNickname());
-        assertEquals(peersAvailable[0], user.getUnreadedMessages().size());
-}
 }

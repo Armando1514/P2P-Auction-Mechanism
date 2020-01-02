@@ -1,7 +1,10 @@
 package p2p.auction.mechanism.Control;
 
+import net.tomp2p.futures.FutureDirect;
+import net.tomp2p.peers.PeerAddress;
 import p2p.auction.mechanism.DAO.*;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -13,6 +16,8 @@ public interface AuctionMechanism {
      {
           AuctionDAO auctionDAO = AuctionMechanismDAOFactory.getInstance().getAuctionDAO();
           try {
+               PeerAddress peerAddress = AuctionMechanismDAOFactory.getInstance().getPeerAddress();
+               auction.setParticipants(auction.getOwner().getNickname(),  peerAddress);
                 return auctionDAO.create(auction);
           } catch (Exception e) {
                e.printStackTrace();
@@ -56,17 +61,49 @@ public interface AuctionMechanism {
           }
      }
 
-     static boolean placeABid(AuctionBid bid)
+
+
+
+
+
+     static void placeABid(AuctionBid bid) throws Exception
      {
           AuctionBidDAO auctionBidDAO = AuctionMechanismDAOFactory.getInstance().getAuctionBidDAO();
-          try {
-                auctionBidDAO.create(bid);
-               return true;
-          } catch (Exception e) {
-               e.printStackTrace();
-               return false;
+          if(bid.getAuction().checkStatus()) {
+               auctionBidDAO.create(bid);
+               AuctionMechanism.updateAuction(bid.getAuction());
+               bid.getAuction().setParticipants(bid.getUser().getNickname(),AuctionMechanismDAOFactory.getInstance().getPeerAddress());
+               AuctionMechanism.updateAuction(bid.getAuction());
+               String message = "The user: "+bid.getUser().getNickname()+", has placed a bid of: "+bid.getBidValue()+", in the auction: "+bid.getAuction().getAuctionName()+"(id: "+bid.getAuction().getId()+").";
+               AuctionMechanism.noticePeers(bid.getAuction(), message);
+
           }
+          else
+               throw new AuctionEndedException("The Auction is ended, is not possible to place a bid");
+
+
      }
+
+     static void noticePeers(Auction auction,  String message) throws IOException, ClassNotFoundException {
+          HashMap<String, PeerAddress> peers_on_topic = auction.getParticipants();
+          Iterator<String> iterator = peers_on_topic.keySet().iterator();
+          while(iterator.hasNext()){
+               String user = iterator.next();
+               PeerAddress peer = peers_on_topic.get(user);
+               if(!peer.equals(AuctionMechanismDAOFactory.getInstance().getPeerAddress())) {
+                    FutureDirect futureDirect = AuctionMechanismDAOFactory.getInstance().getDHT().peer().sendDirect(peer).object(message).start();
+                    futureDirect.awaitUninterruptibly();
+                    if(futureDirect.isFailed())
+                    {
+                        User notActiveUser = UserMechanism.findUser(user);
+                        notActiveUser.setUnreadedMessages(message);
+                        UserMechanism.updateUser(notActiveUser);
+                    }
+               }
+          }
+
+     }
+
 
      static String listAllAuctions()
      {
@@ -88,12 +125,12 @@ public interface AuctionMechanism {
                               AuctionMechanism.updateAuction(auction);
                          }
                          if (auction.getSlots() != null && (!auction.getSlots().isEmpty())) {
-                              AuctionBid lastBid = auction.getSlots().get(0);
-                              list +="id: "+auction.getId()+"\t-name: " + auction.getAuctionName()+"\t-status: " +auction.getStatus()+"\t-fastPrice: " +auction.getFastPrice()+"\t-last bid: "+ lastBid.getBidValue()+ "\n";
+                              AuctionBid lastBid = auction.getSlots().get(auction.getSlots().size()-1);
+                              list +="id: "+auction.getId()+"\tname: " + auction.getAuctionName()+"\tstatus: " +auction.getStatus().toString()+"\tfastPrice: " +auction.getFastPrice()+"\tlast bid: "+ lastBid.getBidValue()+ "\n";
                          }
                          else
                          {
-                              list +="id: "+auction.getId()+"\t-name: " + auction.getAuctionName()+"\t-status: " +auction.getStatus()+"\t-fastPrice: " +auction.getFastPrice()+"\t-last bid: none \n";
+                              list +="id: "+auction.getId()+"\tname: " + auction.getAuctionName()+"\tstatus: " +auction.getStatus().toString()+"\tfastPrice: " +auction.getFastPrice()+"\tlast bid: none \n";
 
                          }
 

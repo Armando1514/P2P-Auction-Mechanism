@@ -3,9 +3,7 @@ package p2p.auction.mechanism.GUI;
 import org.beryx.textio.*;
 import p2p.auction.mechanism.Control.AuctionMechanism;
 import p2p.auction.mechanism.Control.UserMechanism;
-import p2p.auction.mechanism.DAO.Auction;
-import p2p.auction.mechanism.DAO.AuctionBid;
-import p2p.auction.mechanism.DAO.User;
+import p2p.auction.mechanism.DAO.*;
 
 import javax.swing.*;
 import java.text.ParseException;
@@ -39,36 +37,47 @@ public class AuctionGUI {
 
         String keyStrokePlaceABid = "ctrl P";
 
+        String keyStrokeQuit = AuthenticationGUI.keyStrokeQuit;
 
 
-        String keyStrokeQuit = "ctrl Q";
+        String keyStrokeCheckUserStatus = "ctrl S";
+
+
 
         TerminalProperties<?> props = terminal.getProperties();
+
+
         boolean quitStroke = terminal.registerHandler(keyStrokeQuit, t -> {
-
             this.quitGUI();
-
-            return new ReadHandlerData(ReadInterruptionStrategy.Action.CONTINUE);
+            return new ReadHandlerData(ReadInterruptionStrategy.Action.ABORT);
         });
 
         boolean createAuctionStroke = terminal.registerHandler(keyStrokeCreateAuction, t -> {
+            terminal.resetToBookmark("auction");
             if(this.createAuctionGUI() == null)
                 terminal.println("A strange error has occurred, retry after.");
-            return new ReadHandlerData(ReadInterruptionStrategy.Action.RESTART).withRedrawRequired(true);
+            return new ReadHandlerData(ReadInterruptionStrategy.Action.RETURN);
         });
 
         boolean listAuctionsStroke = terminal.registerHandler(keyStrokeListAuctions, t -> {
+            terminal.resetToBookmark("auction");
+
             this.listAuctionsGUI();
             return new ReadHandlerData(ReadInterruptionStrategy.Action.RESTART).withRedrawRequired(true);
         });
 
         boolean placeABidStroke = terminal.registerHandler(keyStrokePlaceABid, t -> {
-            if(this.placeABid() == false)
+            terminal.resetToBookmark("auction");
+
+            if(this.placeABidGUI() == false)
                 terminal.println("A strange error has occurred, retry after.");
             return new ReadHandlerData(ReadInterruptionStrategy.Action.RESTART).withRedrawRequired(true);
         });
 
+
         boolean viewAuctionStroke = terminal.registerHandler(keyStrokeViewAuction, t -> {
+            terminal.resetToBookmark("auction");
+
             Auction auction = this.viewAuctionGUI();
             if( auction== null)
                 terminal.println("Auction does not found.");
@@ -82,6 +91,7 @@ public class AuctionGUI {
                 terminal.println("Owner: " + auction.getOwner().getNickname());
                 terminal.println("Expiration Date: " +  calendarFormat(auction.getExpirationDate()) );
                 terminal.println("Fast price: " + auction.getFastPrice());
+                terminal.println("Auction creation time: " + this.calendarFormat(auction.getCreationDate()));
 
                 int i = 0;
 
@@ -99,24 +109,33 @@ public class AuctionGUI {
             return new ReadHandlerData(ReadInterruptionStrategy.Action.RESTART).withRedrawRequired(true);
         });
 
-        boolean hasHandlers = createAuctionStroke || viewAuctionStroke || listAuctionsStroke;
+        boolean userStatusStroke = terminal.registerHandler(keyStrokeCheckUserStatus, t -> {
+            terminal.resetToBookmark("auction");
+            terminal.moveToLineStart();
+
+            this.userStatusGUI();
+            return new ReadHandlerData(ReadInterruptionStrategy.Action.RESTART).withRedrawRequired(true);
+        });
+
+        boolean hasHandlers = createAuctionStroke || viewAuctionStroke || listAuctionsStroke || placeABidStroke || userStatusStroke || quitStroke;
         if(!hasHandlers) {
             terminal.println("No handlers can be registered.");
         } else {
             props.setPromptBold(true);
             props.setPromptColor("cyan");
-            terminal.println("WELCOME " + user.getNickname() +", YOU HAVE: " + user.getMoney() + " $");
+            terminal.println("WELCOME " + user.getNickname());
             props.setPromptColor("#00ff00");
             props.setPromptBold(false);
 
             terminal.println("--------------------------------------------------------------------------------");
-            if(quitStroke) {
+                terminal.println("Press " + keyStrokeCheckUserStatus + " to check your user status.");
                 terminal.println("Press " + keyStrokeCreateAuction + " to create an auction.");
                 terminal.println("Press " + keyStrokeListAuctions + " for the list of auctions.");
                 terminal.println("Press " + keyStrokeViewAuction + " to view an auction.");
                 terminal.println("Press " + keyStrokePlaceABid + " to place a bid.");
+                terminal.println("Press " + keyStrokeQuit + " to quit.");
 
-            }
+
             terminal.println("You can use these key combinations at any moment during the session.");
             terminal.println("--------------------------------------------------------------------------------");
 
@@ -134,7 +153,51 @@ public class AuctionGUI {
 
     }
 
-    private boolean placeABid()
+    private void userStatusGUI()
+    {
+
+
+        terminal.resetToBookmark("auction");
+        TerminalProperties<?> props = terminal.getProperties();
+        props.setPromptColor("red");
+        terminal.resetLine();
+
+        terminal.println("USER STATUS:");
+        props.setPromptColor("cyan");
+
+        terminal.println("Nickname: "+user.getNickname());
+        terminal.println("Money: "+user.getMoney());
+        if(!user.getMyAuctions().isEmpty()){
+            ArrayList<Auction> myAuctions = user.getMyAuctions();
+            int i = 0;
+            String list = "";
+            while(i < myAuctions.size()) {
+                Auction auction =myAuctions.get(i);
+                list += "id: " + auction.getId() + "\tname: " + auction.getAuctionName() +"\n";
+            i++;
+            }
+            terminal.println("MY AUCTIONS:");
+            terminal.println(list);
+        }
+        if(!user.getAuctionsJoined().isEmpty()){
+            ArrayList<Auction> myAuctionsJoined = user.getAuctionsJoined();
+            int i = 0;
+            String list = "";
+            while(i < myAuctionsJoined.size()) {
+                Auction auction = myAuctionsJoined.get(i);
+                list += "id: " + auction.getId() + "\tname: " + auction.getAuctionName() + "\n";
+            i++;
+            }
+
+            terminal.println("JOINED AUCTIONS:");
+            terminal.println(list);
+        }
+        props.setPromptColor("#00ff00");
+
+
+    }
+
+    private boolean placeABidGUI()
     {
         terminal.resetToBookmark("auction");
         TerminalProperties<?> props = terminal.getProperties();
@@ -155,36 +218,61 @@ public class AuctionGUI {
         {
             if(auction.getStatus() == Auction.AuctionStatus.ENDED) {
                 terminal.resetLine();
+                props.setPromptColor("red");
+
                 terminal.println("Auction ENDED, is not allowed to place a bid.");
             }
             else
             {
                 terminal.resetLine();
+                if(auction.getFastPrice() != null)
                 terminal.println("If you want get the product without competing. Get it faster, place a bid of: " + auction.getFastPrice());
                 Double bidValue = textIO.newDoubleInputReader()
                         .read("Bid value");
                 AuctionBid bid = new AuctionBid(auction, user, bidValue);
-                if(AuctionMechanism.placeABid(bid))
-                {
+                try {
                     props.setPromptColor("red");
-                    terminal.resetLine();
-                    if(bidValue  > auction.getFastPrice())
-                    {
 
-                        terminal.println("You got "+auction.getAuctionName()+", at the fast price of: "+auction.getFastPrice()+ "congratulations.");
-                    }
-                    else
-                    {
-                        terminal.println("You have placed a bid in the auction:  "+auction.getAuctionName()+", of the value: "+bidValue);
+                   AuctionMechanism.placeABid(bid);
+                        terminal.resetLine();
+                        if(auction.getFastPrice() != null) {
+                            if (bidValue >= auction.getFastPrice()) {
+                                props.setPromptColor("cyan");
+                                terminal.println("You got " + auction.getAuctionName() + ", at the fast price of: " + auction.getFastPrice() + ", congratulations.");
+                                props.setPromptColor("#00ff00");
 
-                    }
-                    props.setPromptColor("#00ff00");
-
+                            }
+                            else {
+                                props.setPromptColor("cyan");
+                                terminal.println("You have placed a bid in the auction:  " + auction.getAuctionName() + ", of the value: " + bidValue);
+                                props.setPromptColor("#00ff00");
+                            }
+                        }
+                         else {
+                            props.setPromptColor("cyan");
+                            terminal.println("You have placed a bid in the auction:  " + auction.getAuctionName() + ", of the value: " + bidValue);
+                            props.setPromptColor("#00ff00");
+                        }
+                         if(!user.getAuctionsJoined().contains(bid.getAuction()))
+                            user.setAuctionsJoined(bid.getAuction());
+                        UserMechanism.updateUser(user);
                 }
-                else
-                    return false;
+                catch (HigherBidExistenceException e) {
+                terminal.println(e.getMessage());
             }
-        }
+                catch (AuctionEndedException e) {
+                    terminal.println(e.getMessage());
+            } catch (Exception e) {
+                    e.printStackTrace();
+                    return false;
+                }
+
+
+            }
+            props.setPromptColor("#00ff00");
+
+            }
+
 
         return true;
     }
@@ -263,22 +351,18 @@ public class AuctionGUI {
         Date date = parseDate(day+"/"+month+"/"+year+" "+hours+":"+minutes);
         auction.setExpirationDate(date);
 
-   /*REMEMBER FOR GET DATE
-        Calendar cal = Calendar.getInstance(TimeZone.getTimeZone(ZoneId.systemDefault()));
-        cal.setTime(date);*/
-
 
         auction.setExpirationDate(date);
 
         double fastPrice = textIO.newDoubleInputReader()
-                .read("Fast price");
+                .read("Fast price ( -1 if you don't want this option)");
 
             auction.setFastPrice(fastPrice);
 
             auction.setOwner(user);
         auction = AuctionMechanism.createAuction(auction);
         if( auction != null) {
-            props.setPromptColor("red");
+            props.setPromptColor("cyan");
             terminal.resetToBookmark("auction");
             terminal.println("Auction with id: '"+auction.getId()+"', correctly created.");
             props.setPromptColor("#00ff00");
@@ -293,7 +377,6 @@ public class AuctionGUI {
 
     private  Date parseDate(String date) {
         try {
-            System.out.println(date);
             return new SimpleDateFormat("dd/MMMM/yyyy HH:mm", Locale.US).parse(date);
         } catch (ParseException e) {
             return null;

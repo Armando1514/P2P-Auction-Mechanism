@@ -1,9 +1,6 @@
 package p2p.auction.mechanism.Control;
 
-import p2p.auction.mechanism.DAO.AuctionMechanismDAOFactory;
-import p2p.auction.mechanism.DAO.User;
-import p2p.auction.mechanism.DAO.UserDAO;
-import p2p.auction.mechanism.DAO.UsernameExistsException;
+import p2p.auction.mechanism.DAO.*;
 
 public interface UserMechanism {
 
@@ -20,6 +17,28 @@ public interface UserMechanism {
         }
 
         return true;
+    }
+
+    static void changeUserAddress(User user)
+    {
+        int i = 0;
+        while(i < user.getAuctionsJoined().size())
+        {
+            Auction auction = user.getAuctionsJoined().get(i);
+            if(!(auction.getStatus() == Auction.AuctionStatus.ENDED))
+            {
+                auction.getParticipants().put(user.getNickname(), AuctionMechanismDAOFactory.getInstance().getPeerAddress());
+            }
+        }
+        i = 0;
+        while(i < user.getMyAuctions().size())
+        {
+            Auction auction = user.getMyAuctions().get(i);
+            if(!(auction.getStatus() == Auction.AuctionStatus.ENDED))
+            {
+                auction.getParticipants().put(user.getNickname(), AuctionMechanismDAOFactory.getInstance().getPeerAddress());
+            }
+        }
     }
 
     static boolean updateUser(User user)

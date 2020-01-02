@@ -227,7 +227,7 @@ public class P2PAuctionDAO implements AuctionDAO {
     }
 
     // if mode true, is for create, if mode false, is for removing.
-    private void updateGetAll(Auction auction, boolean mode) throws Exception {
+    public void updateGetAll(Auction auction, boolean mode) throws Exception {
 
         Pair<Number640, Byte> pair2 = null;
         Pair<Number160, Data> pair = null;

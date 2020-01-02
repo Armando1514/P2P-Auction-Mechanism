@@ -1,6 +1,6 @@
 package p2p.auction.mechanism;
 
-import com.sun.org.apache.xerces.internal.dom.AbortException;
+import org.beryx.textio.TerminalProperties;
 import org.beryx.textio.TextIO;
 import org.beryx.textio.TextIoFactory;
 import org.beryx.textio.TextTerminal;
@@ -12,10 +12,11 @@ import p2p.auction.mechanism.GUI.AuctionGUI;
 import p2p.auction.mechanism.GUI.AuthenticationGUI;
 
 public class AuctionApp {
-    @Option(name="-m", aliases="--masterip", usage="the master peer ip address", required=false)
+
+    @Option(name="-m", aliases="--masterip", usage="the master peer ip address", required=true)
     private static String master;
 
-    @Option(name="-id", aliases="--identifierpeer", usage="the unique identifier for this peer", required=false)
+    @Option(name="-id", aliases="--identifierpeer", usage="the unique identifier for this peer", required=true)
     private static int id;
 
     public static void main(String[] args) {
@@ -33,7 +34,14 @@ public class AuctionApp {
 
                 TextIO textIO = TextIoFactory.getTextIO();
                 TextTerminal terminal = textIO.getTextTerminal();
-                terminal.printf("\n"+peerid+"] (Direct Message Received) "+obj+"\n\n");
+                TerminalProperties<?> props = terminal.getProperties();
+                props.setPromptColor("red");
+                props.setPromptBold(true);
+                props.setPromptUnderline(true);
+                terminal.println("\nHai ricevuto una nuova notifica :"+obj+"\n\n");
+                props.setPromptBold(false);
+                props.setPromptUnderline(false);
+                props.setPromptColor("#00ff00");
                 return "success";
             }
 
@@ -42,6 +50,7 @@ public class AuctionApp {
         AuctionApp example = new AuctionApp();
         final CmdLineParser parser = new CmdLineParser(example);
         try {
+            //testing
             if(master == null)
             {
                 master = "127.0.0.1";
@@ -54,6 +63,12 @@ public class AuctionApp {
 
            User user = new AuthenticationGUI(textIO, terminal).authenticationGUIDisplay();
             terminal.resetToBookmark("reset");
+            if(!user.getUnreadedMessages().isEmpty()) {
+                TerminalProperties<?> props = terminal.getProperties();
+                props.setPromptColor("red");
+                terminal.println("You have: " + user.getUnreadedMessages().size() + " messages unreaded, press Ctrl U for read them.");
+                props.setPromptColor("#00ff00");
+            }
 
             new AuctionGUI(textIO,terminal, user).AuctionGUIDisplay();
 

@@ -126,6 +126,13 @@ public class AuctionMechanismDAOFactory implements DAOFactory{
 
     public  PeerAddress getPeerAddress()
     {
+
         return peerDHT.peer().peerAddress();
+    }
+
+
+    public PeerDHT getDHT()
+    {
+        return this.peerDHT;
     }
 }

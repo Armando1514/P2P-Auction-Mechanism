@@ -64,7 +64,7 @@ public class P2PAuctionBidDAOTests {
     @Test
     protected void testCreate() throws Exception {
 
-        User user = new User("userTestUpdate","password", new Double(1), null, null);
+        User user = new User("userTestUpdate","password", new Double(1), null);
         Auction auctionTest = new Auction(user, "testUpdate", new Date(),new Double(1));
 
         auctionTest = auctionDAO.create(auctionTest);
@@ -80,7 +80,7 @@ public class P2PAuctionBidDAOTests {
                     Random random = new Random();
 
                     int rnd = random.ints(1,(NUMBER_OF_PEERS)).findFirst().getAsInt();
-                    User user = new User("test"+rnd,"password", new Double(1), null, null);
+                    User user = new User("test"+rnd,"password", new Double(1), null);
 
                     AuctionBid bid = new AuctionBid(finalAuctionTest, user, new Double(rnd));
                     try {
@@ -137,11 +137,13 @@ public class P2PAuctionBidDAOTests {
     @Test
     protected void testReadLastBid () throws Exception {
 
-        User user = new User("userReadLastBid","password", new Double(1), null, null);
-        Auction auctionTest = new Auction(user, "testReadLastBid", new Date(), new Double(1));
+        User user = new User("userReadLastBid","password", new Double(1), null);
+        Auction auctionTest = new Auction();
+        auctionTest.setAuctionName("testReadLastBid");
         auctionTest = auctionDAO.create(auctionTest);
 
         AuctionBid bid = new AuctionBid(auctionTest, user, new Double(3));
+
         peers[0].create(bid);
         auctionDAO.read(auctionTest.getId());
         int size = auctionDAO.read(auctionTest.getId()).getSlots().size();
@@ -149,4 +151,5 @@ public class P2PAuctionBidDAOTests {
         assertEquals(bidLast.getBidValue(), new Double(3));
 
     }
+
 }
