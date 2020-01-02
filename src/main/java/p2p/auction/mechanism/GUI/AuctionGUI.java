@@ -49,14 +49,14 @@ public class AuctionGUI {
 
         boolean quitStroke = terminal.registerHandler(keyStrokeQuit, t -> {
             this.quitGUI();
-            return new ReadHandlerData(ReadInterruptionStrategy.Action.ABORT);
+            return new ReadHandlerData(ReadInterruptionStrategy.Action.RESTART);
         });
 
         boolean createAuctionStroke = terminal.registerHandler(keyStrokeCreateAuction, t -> {
             terminal.resetToBookmark("auction");
             if(this.createAuctionGUI() == null)
                 terminal.println("A strange error has occurred, retry after.");
-            return new ReadHandlerData(ReadInterruptionStrategy.Action.RETURN);
+            return new ReadHandlerData(ReadInterruptionStrategy.Action.RESTART);
         });
 
         boolean listAuctionsStroke = terminal.registerHandler(keyStrokeListAuctions, t -> {
@@ -392,18 +392,9 @@ public class AuctionGUI {
 
     private void quitGUI()
     {
-        int confirmed = JOptionPane.showConfirmDialog(null,
-                "Are you sure you want to exit the program?", "Exit message",
-                JOptionPane.YES_NO_OPTION);
 
-        if (confirmed == JOptionPane.YES_OPTION) {
             System.exit(0);
-        }
-        else{
-            terminal.resetToBookmark("reset");
-            this.createAuctionGUI();
 
-        }
 
     }
 }

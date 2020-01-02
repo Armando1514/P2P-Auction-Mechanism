@@ -50,11 +50,12 @@ public class AuctionApp {
         AuctionApp example = new AuctionApp();
         final CmdLineParser parser = new CmdLineParser(example);
         try {
-            //testing
+            /*
             if(master == null)
             {
                 master = "127.0.0.1";
-            }
+            }*/
+
             AuctionMechanismDAOFactory.instantiate(id, master, new MessageListenerImpl(id), false);
             parser.parseArgument(args);
              TextIO textIO = TextIoFactory.getTextIO();

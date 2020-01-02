@@ -212,18 +212,8 @@ catch (ReadAbortedException e)
 
     private void quitGUI()
     {
-        int confirmed = JOptionPane.showConfirmDialog(null,
-                "Are you sure you want to exit the program?", "Exit message",
-                JOptionPane.YES_NO_OPTION);
 
-        if (confirmed == JOptionPane.YES_OPTION) {
             System.exit(0);
-        }
-        else{
-            terminal.resetToBookmark("reset");
-            this.authenticationGUIDisplay();
-
-        }
 
     }
 
