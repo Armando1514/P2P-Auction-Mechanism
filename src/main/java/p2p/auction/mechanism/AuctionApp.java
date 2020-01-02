@@ -55,9 +55,8 @@ public class AuctionApp {
             {
                 master = "127.0.0.1";
             }*/
-
-            AuctionMechanismDAOFactory.instantiate(id, master, new MessageListenerImpl(id), false);
             parser.parseArgument(args);
+            AuctionMechanismDAOFactory.instantiate(id, master, new MessageListenerImpl(id), false);
              TextIO textIO = TextIoFactory.getTextIO();
             TextTerminal<?> terminal =  textIO.getTextTerminal();
             terminal.setBookmark("reset");
