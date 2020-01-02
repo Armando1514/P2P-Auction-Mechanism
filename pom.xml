@@ -74,7 +74,7 @@
                             <archive>
                                 <manifest>
                                     <mainClass>
-                                        publishsubscribe.chat.ConsoleControlChat
+                                        p2p.auction.mechanism.AuctionApp
                                     </mainClass>
                                 </manifest>
                             </archive>
