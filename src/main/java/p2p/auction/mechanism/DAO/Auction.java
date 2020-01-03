@@ -151,14 +151,16 @@ public class Auction implements Serializable {
                 if (currentDate.after(expirationDate)) {
 
                     this.status = AuctionStatus.ENDED;
-                    String message = "- The auction: " + this.getAuctionName() + "(id: " + this.getId() + "), is over.";
+                    if(this.getId() != null) {
+                        String message = "- The auction: " + this.getAuctionName() + "(id: " + this.getId() + "), is over.";
 
-                    try {
-                        AuctionMechanism.noticePeers(this, message);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    } catch (ClassNotFoundException e) {
-                        e.printStackTrace();
+                        try {
+                            AuctionMechanism.noticePeers(this, message);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        } catch (ClassNotFoundException e) {
+                            e.printStackTrace();
+                        }
                     }
                     return false;
                 } else
@@ -170,11 +172,11 @@ public class Auction implements Serializable {
         return true;
     }
 
-    public int getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 

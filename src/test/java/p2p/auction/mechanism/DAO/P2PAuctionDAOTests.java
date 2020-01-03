@@ -139,7 +139,7 @@ public class P2PAuctionDAOTests {
         final int[] peersAvailable = {NUMBER_OF_PEERS};
         User user = new User("usdsaer","password", new Double(1), null);
         Auction auctionTest = new Auction(user, "testsdwe", new Date(), new Double(1));
-        peers[0].create(auctionTest);
+        Auction auctionTestCreated = peers[0].create(auctionTest);
 
         while( i < NUMBER_OF_PEERS ) {
 
@@ -151,8 +151,8 @@ public class P2PAuctionDAOTests {
 
                     try {
 
-                        auctionTest.getParticipants().put(String.valueOf(finalI),peerAddresses[finalI]);
-                        peers[0].update(auctionTest);
+                        auctionTestCreated.getParticipants().put(String.valueOf(finalI),peerAddresses[finalI]);
+                        peers[0].update(auctionTestCreated);
 
                     } catch (Exception e) {
                         e.printStackTrace();
