@@ -25,6 +25,9 @@ public interface AuctionMechanism {
           }
      }
 
+
+
+
      static Auction findAuction(Integer id)
      {
           AuctionDAO auctionDAO = AuctionMechanismDAOFactory.getInstance().getAuctionDAO();

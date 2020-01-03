@@ -151,7 +151,7 @@ public class Auction implements Serializable {
                 if (currentDate.after(expirationDate)) {
 
                     this.status = AuctionStatus.ENDED;
-                    String message = "The auction: " + this.getAuctionName() + "(id: " + this.getId() + "), is over.";
+                    String message = "- The auction: " + this.getAuctionName() + "(id: " + this.getId() + "), is over.";
 
                     try {
                         AuctionMechanism.noticePeers(this, message);

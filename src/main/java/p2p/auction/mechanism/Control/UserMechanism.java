@@ -28,6 +28,7 @@ public interface UserMechanism {
             if(!(auction.getStatus() == Auction.AuctionStatus.ENDED))
             {
                 auction.getParticipants().put(user.getNickname(), AuctionMechanismDAOFactory.getInstance().getPeerAddress());
+                AuctionMechanism.updateAuction(auction);
             }
             i++;
         }
@@ -38,6 +39,8 @@ public interface UserMechanism {
             if(!(auction.getStatus() == Auction.AuctionStatus.ENDED))
             {
                 auction.getParticipants().put(user.getNickname(), AuctionMechanismDAOFactory.getInstance().getPeerAddress());
+                AuctionMechanism.updateAuction(auction);
+
             }
             i++;
         }

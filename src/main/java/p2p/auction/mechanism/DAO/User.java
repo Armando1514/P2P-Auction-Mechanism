@@ -105,6 +105,11 @@ public class User implements Serializable{
 
                 }
             }
+            else
+            {
+                this.setUnreadedMessages(newUser.getUnreadedMessages());
+
+            }
         }
         else {
             this.setUnreadedMessages(newUser.getUnreadedMessages());

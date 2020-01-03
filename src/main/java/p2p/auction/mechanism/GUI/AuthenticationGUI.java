@@ -6,6 +6,8 @@ import javax.swing.*;
 import p2p.auction.mechanism.Control.UserMechanism;
 import p2p.auction.mechanism.DAO.User;
 
+import java.io.IOException;
+
 public class AuthenticationGUI {
 
 
@@ -39,6 +41,11 @@ public   AuthenticationGUI(TextIO textIO, TextTerminal<?> terminal)
         });
 
         boolean registerStroke = terminal.registerHandler(keyStrokeRegister, t -> {
+            if(!terminal.resetToBookmark("authentication")) {
+                System.out.print("\033[H\033[2J");
+                System.out.flush();
+                this.printMenu();
+            }
             if (!authenticationDisableStrokes[0]){
                 userSaved = this.registerGUI();
             if (userSaved != null) {
@@ -50,7 +57,6 @@ public   AuthenticationGUI(TextIO textIO, TextTerminal<?> terminal)
                 terminal.println("A strange error occurs, try after.");
         }
         else {
-                terminal.resetToBookmark("auction");
                 terminal.println("You are not in the login session, command not allowed here.");
             }
 
@@ -58,7 +64,11 @@ public   AuthenticationGUI(TextIO textIO, TextTerminal<?> terminal)
 
         });
         boolean loginStroke = terminal.registerHandler(keyStrokeLogin, t -> {
-
+            if(!terminal.resetToBookmark("authentication")) {
+                System.out.print("\033[H\033[2J");
+                System.out.flush();
+                this.printMenu();
+            }
             if (!authenticationDisableStrokes[0]){
                 userSaved = this.loginGUI();
                 if (userSaved != null) {
@@ -71,7 +81,7 @@ public   AuthenticationGUI(TextIO textIO, TextTerminal<?> terminal)
                     terminal.println("A strange error occurs, try after.");
             }
             else {
-                terminal.resetToBookmark("auction");
+
                 terminal.println("You are not in the login session, command not allowed here.");
 
             }
@@ -79,7 +89,7 @@ public   AuthenticationGUI(TextIO textIO, TextTerminal<?> terminal)
         });
 
 
-        boolean hasHandlers = loginStroke || registerStroke  ;
+        boolean hasHandlers = loginStroke || registerStroke || quitStroke ;
         if(!hasHandlers) {
             terminal.println("No handlers can be registered.");
         } else {
@@ -92,24 +102,10 @@ public   AuthenticationGUI(TextIO textIO, TextTerminal<?> terminal)
             props.setPromptColor("#00ff00");
             props.setPromptUnderline(false);
             props.setPromptBold(false);
-
-            terminal.println("--------------------------------------------------------------------------------");
-
-
-                terminal.println("Press " + keyStrokeRegister + " to register");
-
-                terminal.println("Press " + keyStrokeLogin + " to login");
-
-                terminal.println("Press " + keyStrokeQuit + " to quit.");
-
-            terminal.println("You can use these key combinations at any moment during your authentication entry session.");
-            terminal.println("--------------------------------------------------------------------------------");
-
-
+            this.printMenu();
             terminal.setBookmark("authentication");
 
         }
-        terminal.resetToBookmark("authentication");
 
 try {
     textIO.newStringInputReader().withPattern("(?i)(?<= |^)exit(?= |$)").read("\nWrite 'exit' to terminate...");
@@ -125,10 +121,25 @@ catch (ReadAbortedException e)
 
     }
 
+    private void printMenu()
+    {
+        terminal.println("--------------------------------------------------------------------------------");
+
+
+
+        terminal.println("Press " + keyStrokeRegister + " to register");
+
+        terminal.println("Press " + keyStrokeLogin + " to login");
+
+        terminal.println("Press " + keyStrokeQuit + " to quit.");
+
+        terminal.println("You can use these key combinations at any moment during your authentication entry session.");
+        terminal.println("--------------------------------------------------------------------------------");
+
+    }
 
     private User registerGUI()
     {
-        terminal.resetToBookmark("authentication");
         terminal.resetLine();
         TerminalProperties<?> props = terminal.getProperties();
         props.setPromptColor("red");
@@ -170,7 +181,6 @@ catch (ReadAbortedException e)
 
     private User loginGUI()
     {
-        terminal.resetToBookmark("authentication");
         terminal.resetLine();
         TerminalProperties<?> props = terminal.getProperties();
         props.setPromptColor("red");

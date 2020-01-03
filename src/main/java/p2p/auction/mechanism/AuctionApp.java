@@ -13,10 +13,10 @@ import p2p.auction.mechanism.GUI.AuthenticationGUI;
 
 public class AuctionApp {
 
-    @Option(name="-m", aliases="--masterip", usage="the master peer ip address", required=true)
+    @Option(name="-m", aliases="--masterip", usage="the master peer ip address", required=false)
     private static String master;
 
-    @Option(name="-id", aliases="--identifierpeer", usage="the unique identifier for this peer", required=true)
+    @Option(name="-id", aliases="--identifierpeer", usage="the unique identifier for this peer", required=false)
     private static int id;
 
     public static void main(String[] args) {
@@ -50,11 +50,11 @@ public class AuctionApp {
         AuctionApp example = new AuctionApp();
         final CmdLineParser parser = new CmdLineParser(example);
         try {
-            /*
+
             if(master == null)
             {
                 master = "127.0.0.1";
-            }*/
+            }
             parser.parseArgument(args);
             AuctionMechanismDAOFactory.instantiate(id, master, new MessageListenerImpl(id), false);
              TextIO textIO = TextIoFactory.getTextIO();

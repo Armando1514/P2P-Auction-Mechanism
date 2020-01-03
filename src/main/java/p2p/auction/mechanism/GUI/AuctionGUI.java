@@ -5,7 +5,6 @@ import p2p.auction.mechanism.Control.AuctionMechanism;
 import p2p.auction.mechanism.Control.UserMechanism;
 import p2p.auction.mechanism.DAO.*;
 
-import javax.swing.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Month;
@@ -17,6 +16,19 @@ public class AuctionGUI {
     private TextTerminal<?> terminal ;
     private TextIO textIO;
     private User user;
+    private final String keyStrokeCreateAuction = "ctrl C";
+
+    private final String keyStrokeViewAuction = "ctrl V";
+
+    private final String keyStrokeListAuctions = "ctrl L";
+
+    private final String keyStrokePlaceABid = "ctrl B";
+
+    private final String keyStrokeQuit = AuthenticationGUI.keyStrokeQuit;
+
+    private final String keyStrokeReadUnreadedMessage = "ctrl U";
+
+    private final String keyStrokeCheckUserStatus = "ctrl S";
 
     public   AuctionGUI(TextIO textIO, TextTerminal<?> terminal, User user)
     {
@@ -29,21 +41,6 @@ public class AuctionGUI {
     public void AuctionGUIDisplay() {
 
 
-        String keyStrokeCreateAuction = "ctrl C";
-
-        String keyStrokeViewAuction = "ctrl V";
-
-        String keyStrokeListAuctions = "ctrl L";
-
-        String keyStrokePlaceABid = "ctrl P";
-
-        String keyStrokeQuit = AuthenticationGUI.keyStrokeQuit;
-
-
-        String keyStrokeCheckUserStatus = "ctrl S";
-
-
-
         TerminalProperties<?> props = terminal.getProperties();
 
 
@@ -52,22 +49,34 @@ public class AuctionGUI {
             return new ReadHandlerData(ReadInterruptionStrategy.Action.RESTART);
         });
 
+        boolean readUnreadedMessageStroke = terminal.registerHandler(keyStrokeReadUnreadedMessage, t -> {
+            if(!terminal.resetToBookmark("auction"))
+                     this.printMenuGUI();
+
+            this.readUnreadedMessageGUI();
+            return new ReadHandlerData(ReadInterruptionStrategy.Action.RESTART);
+        });
+
+
         boolean createAuctionStroke = terminal.registerHandler(keyStrokeCreateAuction, t -> {
-            terminal.resetToBookmark("auction");
+            if(!terminal.resetToBookmark("auction"))
+                this.printMenuGUI();
             if(this.createAuctionGUI() == null)
                 terminal.println("A strange error has occurred, retry after.");
             return new ReadHandlerData(ReadInterruptionStrategy.Action.RESTART);
         });
 
         boolean listAuctionsStroke = terminal.registerHandler(keyStrokeListAuctions, t -> {
-            terminal.resetToBookmark("auction");
+            if(!terminal.resetToBookmark("auction"))
+                this.printMenuGUI();
 
             this.listAuctionsGUI();
             return new ReadHandlerData(ReadInterruptionStrategy.Action.RESTART).withRedrawRequired(true);
         });
 
         boolean placeABidStroke = terminal.registerHandler(keyStrokePlaceABid, t -> {
-            terminal.resetToBookmark("auction");
+            if(!terminal.resetToBookmark("auction"))
+                this.printMenuGUI();
 
             if(this.placeABidGUI() == false)
                 terminal.println("A strange error has occurred, retry after.");
@@ -76,7 +85,8 @@ public class AuctionGUI {
 
 
         boolean viewAuctionStroke = terminal.registerHandler(keyStrokeViewAuction, t -> {
-            terminal.resetToBookmark("auction");
+            if(!terminal.resetToBookmark("auction"))
+                this.printMenuGUI();
 
             Auction auction = this.viewAuctionGUI();
             if( auction== null)
@@ -110,14 +120,14 @@ public class AuctionGUI {
         });
 
         boolean userStatusStroke = terminal.registerHandler(keyStrokeCheckUserStatus, t -> {
-            terminal.resetToBookmark("auction");
-            terminal.moveToLineStart();
+            if(!terminal.resetToBookmark("auction"))
+                this.printMenuGUI();
 
             this.userStatusGUI();
             return new ReadHandlerData(ReadInterruptionStrategy.Action.RESTART).withRedrawRequired(true);
         });
 
-        boolean hasHandlers = createAuctionStroke || viewAuctionStroke || listAuctionsStroke || placeABidStroke || userStatusStroke || quitStroke;
+        boolean hasHandlers = createAuctionStroke || viewAuctionStroke || listAuctionsStroke || placeABidStroke || userStatusStroke || readUnreadedMessageStroke || quitStroke;
         if(!hasHandlers) {
             terminal.println("No handlers can be registered.");
         } else {
@@ -127,23 +137,10 @@ public class AuctionGUI {
             props.setPromptColor("#00ff00");
             props.setPromptBold(false);
 
-            terminal.println("--------------------------------------------------------------------------------");
-                terminal.println("Press " + keyStrokeCheckUserStatus + " to check your user status.");
-                terminal.println("Press " + keyStrokeCreateAuction + " to create an auction.");
-                terminal.println("Press " + keyStrokeListAuctions + " for the list of auctions.");
-                terminal.println("Press " + keyStrokeViewAuction + " to view an auction.");
-                terminal.println("Press " + keyStrokePlaceABid + " to place a bid.");
-                terminal.println("Press " + keyStrokeQuit + " to quit.");
-
-
-            terminal.println("You can use these key combinations at any moment during the session.");
-            terminal.println("--------------------------------------------------------------------------------");
-
-
+            printMenuGUI();
             terminal.setBookmark("auction");
 
         }
-        terminal.resetToBookmark("auction");
 
         textIO.newStringInputReader().withPattern("(?i)(?<= |^)exit(?= |$)").read("\nWrite 'exit' to terminate...");
 
@@ -152,6 +149,53 @@ public class AuctionGUI {
 
 
     }
+
+    private void printMenuGUI()
+    {
+        terminal.println("--------------------------------------------------------------------------------");
+        terminal.println("Press " + keyStrokeCheckUserStatus + " to check your user status.");
+        terminal.println("Press " + keyStrokeReadUnreadedMessage + " to read your unreaded messages");
+        terminal.println("Press " + keyStrokeCreateAuction + " to create an auction.");
+        terminal.println("Press " + keyStrokeListAuctions + " for the list of auctions.");
+        terminal.println("Press " + keyStrokeViewAuction + " to view an auction.");
+        terminal.println("Press " + keyStrokePlaceABid + " to place a bid.");
+        terminal.println("Press " + keyStrokeQuit + " to quit.");
+
+
+        terminal.println("You can use these key combinations at any moment during the session.");
+        terminal.println("--------------------------------------------------------------------------------");
+
+
+    }
+
+    private void readUnreadedMessageGUI()
+    {
+        TerminalProperties<?> props = terminal.getProperties();
+        props.setPromptColor("red");
+        terminal.resetLine();
+
+        terminal.println("UNREADED MESSAGES:");
+        props.setPromptColor("cyan");
+
+        ArrayList<String> unreadedMessages = user.getUnreadedMessages();
+
+        if(!unreadedMessages.isEmpty())
+        {
+            int i = 0;
+            while(i < unreadedMessages.size()) {
+                terminal.println("Message number: "+i+": "+unreadedMessages.get(i));
+                i++;
+            }
+            user.setUnreadedMessages(new ArrayList<>());
+            UserMechanism.updateUser(user);
+        }
+        else
+            terminal.println("No messages unreaded");
+
+        props.setPromptColor("#00ff00");
+
+    }
+
 
     private void userStatusGUI()
     {
@@ -377,7 +421,7 @@ public class AuctionGUI {
     {
         Calendar cal = Calendar.getInstance(TimeZone.getTimeZone(ZoneId.systemDefault()));
         cal.setTime(date);
-        return cal.get(Calendar.HOUR_OF_DAY) +":"+cal.get(Calendar.MINUTE)+" "+cal.get(Calendar.DAY_OF_MONTH)+"/"+cal.get(Calendar.MONTH)+"/"+cal.get(Calendar.YEAR);
+        return cal.get(Calendar.HOUR_OF_DAY) +":"+cal.get(Calendar.MINUTE)+" "+(cal.get(Calendar.DAY_OF_MONTH)+1)+"/"+cal.get(Calendar.MONTH)+"/"+cal.get(Calendar.YEAR);
     }
 
     private void quitGUI()
