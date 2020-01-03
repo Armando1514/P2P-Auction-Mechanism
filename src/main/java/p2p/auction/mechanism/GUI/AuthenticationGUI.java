@@ -35,7 +35,7 @@ public   AuthenticationGUI(TextIO textIO, TextTerminal<?> terminal)
 
         boolean quitStroke = terminal.registerHandler(keyStrokeQuit, t -> {
             this.quitGUI();
-            return new ReadHandlerData(ReadInterruptionStrategy.Action.ABORT);
+            return new ReadHandlerData(ReadInterruptionStrategy.Action.ABORT).withRedrawRequired(true);
         });
 
         boolean registerStroke = terminal.registerHandler(keyStrokeRegister, t -> {

@@ -157,7 +157,6 @@ public class AuctionGUI {
     {
 
 
-        terminal.resetToBookmark("auction");
         TerminalProperties<?> props = terminal.getProperties();
         props.setPromptColor("red");
         terminal.resetLine();
@@ -199,10 +198,8 @@ public class AuctionGUI {
 
     private boolean placeABidGUI()
     {
-        terminal.resetToBookmark("auction");
         TerminalProperties<?> props = terminal.getProperties();
         props.setPromptColor("red");
-        terminal.resetLine();
 
         terminal.println("PLACE A BID:");
         props.setPromptColor("#00ff00");
@@ -211,20 +208,17 @@ public class AuctionGUI {
         Auction auction = AuctionMechanism.findAuction(auctionId);
         if( auction == null)
         {
-            terminal.resetLine();
-            terminal.println("Auction does not found");
+          terminal.println("Auction does not found");
         }
         else
         {
             if(auction.getStatus() == Auction.AuctionStatus.ENDED) {
-                terminal.resetLine();
                 props.setPromptColor("red");
 
                 terminal.println("Auction ENDED, is not allowed to place a bid.");
             }
             else
             {
-                terminal.resetLine();
                 if(auction.getFastPrice() != null)
                 terminal.println("If you want get the product without competing. Get it faster, place a bid of: " + auction.getFastPrice());
                 Double bidValue = textIO.newDoubleInputReader()
@@ -234,7 +228,6 @@ public class AuctionGUI {
                     props.setPromptColor("red");
 
                    AuctionMechanism.placeABid(bid);
-                        terminal.resetLine();
                         if(auction.getFastPrice() != null) {
                             if (bidValue >= auction.getFastPrice()) {
                                 props.setPromptColor("cyan");
@@ -253,9 +246,10 @@ public class AuctionGUI {
                             terminal.println("You have placed a bid in the auction:  " + auction.getAuctionName() + ", of the value: " + bidValue);
                             props.setPromptColor("#00ff00");
                         }
-                         if(!user.getAuctionsJoined().contains(bid.getAuction()))
-                            user.setAuctionsJoined(bid.getAuction());
-                        UserMechanism.updateUser(user);
+                         if(!user.getAuctionsJoined().contains(bid.getAuction())) {
+                             user.setAuctionsJoined(bid.getAuction());
+                             UserMechanism.updateUser(user);
+                         }
                 }
                 catch (HigherBidExistenceException e) {
                 terminal.println(e.getMessage());
@@ -279,8 +273,6 @@ public class AuctionGUI {
 
     private Auction viewAuctionGUI()
     {
-        terminal.resetToBookmark("auction");
-        terminal.resetLine();
         TerminalProperties<?> props = terminal.getProperties();
         props.setPromptColor("red");
         terminal.resetLine();
@@ -295,7 +287,6 @@ public class AuctionGUI {
 
     private void listAuctionsGUI()
     {
-        terminal.resetToBookmark("auction");
         TerminalProperties<?> props = terminal.getProperties();
 
         props.setPromptColor("red");
@@ -315,8 +306,7 @@ public class AuctionGUI {
 
     private Auction createAuctionGUI()
     {
-        terminal.resetToBookmark("auction");
-        terminal.resetLine();
+
         TerminalProperties<?> props = terminal.getProperties();
         props.setPromptColor("red");
         terminal.moveToLineStart();

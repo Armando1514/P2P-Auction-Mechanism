@@ -145,26 +145,27 @@ public class Auction implements Serializable {
         if(this.status == AuctionStatus.ENDED) {
             return false;
         }
+        else {
+            if (this.expirationDate != null) {
+                Date currentDate = new Date();
+                if (currentDate.after(expirationDate)) {
 
-        if(this.expirationDate != null) {
-            Date currentDate = new Date();
-            if (currentDate.after(expirationDate)) {
+                    this.status = AuctionStatus.ENDED;
+                    String message = "The auction: " + this.getAuctionName() + "(id: " + this.getId() + "), is over.";
 
-                this.status = AuctionStatus.ENDED;
-                String message = "The auction: "+this.getAuctionName()+"(id: "+this.getId()+"), is over.";
+                    try {
+                        AuctionMechanism.noticePeers(this, message);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    } catch (ClassNotFoundException e) {
+                        e.printStackTrace();
+                    }
+                    return false;
+                } else
+                    this.status = AuctionStatus.ONGOING;
 
-                try {
-                    AuctionMechanism.noticePeers(this,message);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } catch (ClassNotFoundException e) {
-                    e.printStackTrace();
-                }
-                return false;
-            } else
-                this.status = AuctionStatus.ONGOING;
-
-            return true;
+                return true;
+            }
         }
         return true;
     }

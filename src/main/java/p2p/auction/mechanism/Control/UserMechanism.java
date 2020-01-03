@@ -29,6 +29,7 @@ public interface UserMechanism {
             {
                 auction.getParticipants().put(user.getNickname(), AuctionMechanismDAOFactory.getInstance().getPeerAddress());
             }
+            i++;
         }
         i = 0;
         while(i < user.getMyAuctions().size())
@@ -38,6 +39,7 @@ public interface UserMechanism {
             {
                 auction.getParticipants().put(user.getNickname(), AuctionMechanismDAOFactory.getInstance().getPeerAddress());
             }
+            i++;
         }
     }
 

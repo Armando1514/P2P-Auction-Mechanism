@@ -35,10 +35,10 @@ public class AuctionApp {
                 TextIO textIO = TextIoFactory.getTextIO();
                 TextTerminal terminal = textIO.getTextTerminal();
                 TerminalProperties<?> props = terminal.getProperties();
-                props.setPromptColor("red");
+                props.setPromptColor("yellow");
                 props.setPromptBold(true);
                 props.setPromptUnderline(true);
-                terminal.println("\nHai ricevuto una nuova notifica :"+obj+"\n\n");
+                terminal.println("\nNew notification ~ "+obj+"\n\n");
                 props.setPromptBold(false);
                 props.setPromptUnderline(false);
                 props.setPromptColor("#00ff00");
