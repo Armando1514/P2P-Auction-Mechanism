@@ -3,28 +3,18 @@ package p2p.auction.mechanism.DAO;
 import java.io.Serializable;
 
 public class AuctionBid implements Serializable {
-
+    private static final long serialVersionUID = 1L;
     private Auction auction;
     private User user;
     private double bidValue;
-    public AuctionBid(Auction auction, User user, double bidValue)
-    {
+    public AuctionBid(Auction auction, User user, double bidValue) {
         this.setAuction(auction);
         this.setUser(user);
         this.setBidValue(bidValue);
     }
 
-    public boolean isSmallerThan(AuctionBid auctionBid)
-    {
-        if(this.getBidValue() < auctionBid.getBidValue()) {
-            System.out.println("true: "+ this.getBidValue()+ "  <  " + auctionBid.getBidValue());
-            return true;
-        }
-        else {
-            System.out.println("false: "+ this.getBidValue()+ "  <  " + auctionBid.getBidValue());
-
-            return false;
-        }
+    boolean isSmallerThan(AuctionBid auctionBid) {
+        return this.getBidValue() < auctionBid.getBidValue();
     }
 
 
@@ -48,7 +38,7 @@ public class AuctionBid implements Serializable {
         return bidValue;
     }
 
-    public void setBidValue(double bidValue) {
+    void setBidValue(double bidValue) {
         this.bidValue = bidValue;
     }
 }

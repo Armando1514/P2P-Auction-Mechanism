@@ -9,11 +9,8 @@ public interface UserMechanism {
         UserDAO userDAO = AuctionMechanismDAOFactory.getInstance().getUserDAO();
         try {
             userDAO.create(user);
-        } catch (UsernameExistsException e) {
+        } catch (Exception e) {
             return false;
-        }
-        catch (Exception e) {
-            e.printStackTrace();
         }
 
         return true;
@@ -21,12 +18,15 @@ public interface UserMechanism {
 
     static void changeUserAddress(User user)
     {
+
+
         int i = 0;
         while(i < user.getAuctionsJoined().size())
         {
             Auction auction = user.getAuctionsJoined().get(i);
             if(!(auction.getStatus() == Auction.AuctionStatus.ENDED))
             {
+
                 auction.getParticipants().put(user.getNickname(), AuctionMechanismDAOFactory.getInstance().getPeerAddress());
                 AuctionMechanism.updateAuction(auction);
             }
@@ -54,9 +54,9 @@ public interface UserMechanism {
             userDAO.update(user);
             return true;
         } catch (Exception e) {
-            e.printStackTrace();
+            return false;
+
         }
-        return false;
     }
 
     static User findUser(String nickname)
@@ -65,7 +65,7 @@ public interface UserMechanism {
         try {
             return userDAO.read(nickname);
         } catch (Exception e) {
-            e.printStackTrace();
+            return null;
         }
-        return null;
+
     }}

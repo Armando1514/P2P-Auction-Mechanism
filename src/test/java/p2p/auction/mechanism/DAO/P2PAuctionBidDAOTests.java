@@ -6,14 +6,12 @@ import p2p.auction.mechanism.MessageListener;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
-public class P2PAuctionBidDAOTests {
+class P2PAuctionBidDAOTests {
 
     private static final int NUMBER_OF_PEERS = 5;
 
@@ -21,16 +19,16 @@ public class P2PAuctionBidDAOTests {
 
     private static AuctionDAO auctionDAO;
 
-    private static CountDownLatch c4  ;
+    private static CountDownLatch c4;
 
     @BeforeAll
     static void initPeer() throws Exception {
         peers = new AuctionBidDAO[NUMBER_OF_PEERS];
 
         class MessageListenerImpl implements MessageListener {
-            int peerid;
+            private int peerid;
 
-            public MessageListenerImpl(int peerid) {
+            private MessageListenerImpl(int peerid) {
                 this.peerid = peerid;
             }
 
@@ -41,60 +39,54 @@ public class P2PAuctionBidDAOTests {
 
         }
         try {
-            c4 = new CountDownLatch(NUMBER_OF_PEERS) ;
+            c4 = new CountDownLatch(NUMBER_OF_PEERS);
 
 
             auctionDAO = AuctionMechanismDAOFactory.instantiate(0, "127.0.0.1", new MessageListenerImpl(0), true).getAuctionDAO();
 
-            int  i = 0;
-            while( i  < NUMBER_OF_PEERS )
-            {
+            int i = 0;
+            while (i < NUMBER_OF_PEERS) {
 
                 peers[i] = AuctionMechanismDAOFactory.instantiate(i + 1, "127.0.0.1", new MessageListenerImpl(i + 1), true).getAuctionBidDAO();
                 i++;
             }
 
         } catch (IOException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
     }
 
     //check if all the bids  created in parallel from different peers, are in the right order.
     @Test
-    protected void testCreate() throws Exception {
+    void testCreate() throws Exception {
 
-        User user = new User("userTestUpdate","password", new Double(1), null);
-        Auction auctionTest = new Auction(user, "testUpdate", new Date(),new Double(1));
-
+        Auction auctionTest = new Auction();
         auctionTest = auctionDAO.create(auctionTest);
+
         int i = 0;
 
-        while( i < NUMBER_OF_PEERS ) {
+        while (i < NUMBER_OF_PEERS) {
 
             Auction finalAuctionTest = auctionTest;
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
+            new Thread(() -> {
 
-                    Random random = new Random();
+                Random random = new Random();
 
-                    int rnd = random.ints(1,(NUMBER_OF_PEERS)).findFirst().getAsInt();
-                    User user = new User("test"+rnd,"password", new Double(1), null);
+                int rnd = random.ints(1, (NUMBER_OF_PEERS)).findFirst().getAsInt();
+                User user1 = new User("test" + rnd, "password");
 
-                    AuctionBid bid = new AuctionBid(finalAuctionTest, user, new Double(rnd));
-                    try {
-                        peers[rnd].create(bid);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-
-                    c4.countDown();
-
+                AuctionBid bid = new AuctionBid(finalAuctionTest, user1, (double) rnd);
+                try {
+                    peers[rnd].create(bid);
+                } catch (Exception e) {
+                    System.out.println("controlled exception " + e.getMessage());
                 }
+
+                c4.countDown();
+
             }).start();
 
-            i ++;
+            i++;
         }
         c4.await();
 
@@ -104,26 +96,25 @@ public class P2PAuctionBidDAOTests {
         i = 0;
 
         //check if all the bids are in dec order.
-        ArrayList<AuctionBid> auctionSlot = null;
+        ArrayList < AuctionBid > auctionSlot = null;
         try {
             auctionSlot = auctionDAO.read(auctionTest.getId()).getSlots();
         } catch (Exception e) {
-            e.printStackTrace();
+            e.addSuppressed(e);
         }
 
-        while( i < auctionSlot.size())
-        {
+        assert auctionSlot != null;
+        while (i < auctionSlot.size()) {
 
-            Double pivot =  auctionSlot.get(i).getBidValue();
+            Double pivot = auctionSlot.get(i).getBidValue();
             int j = i + 1;
 
 
-            while(auctionSlot.size() > j)
-            {
+            while (auctionSlot.size() > j) {
                 Double tmp = auctionSlot.get(j).getBidValue();
 
 
-                assertFalse(tmp < pivot, "The elements are not in the right order. P2PAuctionCRUDTests." );
+                assertFalse(tmp < pivot, "The elements are not in the right order. P2PAuctionCRUDTests.");
                 j++;
             }
             i++;
@@ -134,22 +125,6 @@ public class P2PAuctionBidDAOTests {
     }
 
 
-    @Test
-    protected void testReadLastBid () throws Exception {
 
-        User user = new User("userReadLastBid","password", new Double(1), null);
-        Auction auctionTest = new Auction();
-        auctionTest.setAuctionName("testReadLastBid");
-        auctionTest = auctionDAO.create(auctionTest);
-
-        AuctionBid bid = new AuctionBid(auctionTest, user, new Double(3));
-
-        peers[0].create(bid);
-        auctionDAO.read(auctionTest.getId());
-        int size = auctionDAO.read(auctionTest.getId()).getSlots().size();
-        AuctionBid bidLast = auctionDAO.read(auctionTest.getId()).getSlots().get(size - 1);
-        assertEquals(bidLast.getBidValue(), new Double(3));
-
-    }
 
 }

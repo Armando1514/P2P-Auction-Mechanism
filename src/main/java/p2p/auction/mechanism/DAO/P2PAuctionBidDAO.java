@@ -9,7 +9,6 @@ import net.tomp2p.storage.Data;
 import net.tomp2p.utils.Pair;
 import p2p.auction.mechanism.Control.AuctionMechanism;
 
-import java.io.IOException;
 import java.util.Random;
 
 public class P2PAuctionBidDAO implements AuctionBidDAO {
@@ -46,19 +45,19 @@ public class P2PAuctionBidDAO implements AuctionBidDAO {
                 Auction lastAuction = (Auction) pair.element1().object();
 
 
-                    //get the last Bid
-                    if ((lastAuction.getSlots().size() - 1) > 0) {
-                        int size;
-                        size = lastAuction.getSlots().size() - 1;
+                //get the last Bid
+                if ((lastAuction.getSlots().size() - 1) > 0) {
+                    int size;
+                    size = lastAuction.getSlots().size() - 1;
 
-                        // check if the bid that i'm going to put, is bigger that the last bid inserted.
-                        AuctionBid lastBid = lastAuction.getSlots().get(size - 1);
-                        // if is lower, remove it.
-                        if (!lastBid.isSmallerThan(newBid)) {
-                            peerDHT.remove(Number160.createHash(newBid.getAuction().getId())).versionKey(pair.element0()).start()
-                                    .awaitUninterruptibly();
-                            throw new HigherBidExistenceException("Your bid: " + newBid.getBidValue() + " is lower than the last one: " + lastBid.getBidValue() + ", update the auction status.");
-                        }
+                    // check if the bid that i'm going to put, is bigger that the last bid inserted.
+                    AuctionBid lastBid = lastAuction.getSlots().get(size - 1);
+                    // if is lower, remove it.
+                    if (!lastBid.isSmallerThan(newBid)) {
+                        peerDHT.remove(Number160.createHash(newBid.getAuction().getId())).versionKey(pair.element0()).start()
+                                .awaitUninterruptibly();
+                        throw new HigherBidExistenceException("Your bid: " + newBid.getBidValue() + " is lower than the last one: " + lastBid.getBidValue() + ", update the auction status.");
+                    }
 
 
                 }
@@ -75,10 +74,22 @@ public class P2PAuctionBidDAO implements AuctionBidDAO {
         }
         if (pair2 != null && pair2.element1() == 1) {
 
-         peerDHT.put(Number160.createHash(newBid.getAuction().getId()))
+            peerDHT.put(Number160.createHash(newBid.getAuction().getId()))
                     .versionKey(pair2.element0().versionKey()).putConfirm()
                     .data(new Data()).start().awaitUninterruptibly();
-         AuctionMechanismDAOFactory.getInstance().getAuctionDAO().updateGetAll((Auction) pair.element1().object(),true);
+            Auction lastAuction = (Auction) pair.element1().object();
+            if (newBid.getBidValue() >= lastAuction.getFastPrice()) {
+                newBid.getUser().setWinnedBid(lastAuction);
+                AuctionMechanismDAOFactory.getInstance().getUserDAO().update(newBid.getUser());
+                String message = "The auction: " + lastAuction.getAuctionName() + "(id: " + lastAuction.getId() + "), is over. The winner is "+newBid.getUser().getNickname()+" , that has payed: "+lastAuction.getFastPrice();
+
+                NotificationMessage not = new NotificationMessage();
+                not.setBid(new AuctionBid(lastAuction, newBid.getUser() ,  lastAuction.getFastPrice()));
+                not.setMessage(message);
+                not.setType(NotificationMessage.MessageType.WIN);
+                AuctionMechanism.noticePeers(not);
+            }
+            AuctionMechanismDAOFactory.getInstance().getAuctionDAO().updateGetAll((Auction) pair.element1().object(),true);
 
         } else {
             throw new DAOException("we cannot handle this kind of inconsistency. Wait and retry after several minutes");
@@ -93,8 +104,7 @@ public class P2PAuctionBidDAO implements AuctionBidDAO {
        In this case, write the new bind and assign the slot to the user.
        */
     private  Pair<Number160, Data> getAndUpdate(
-            AuctionBid newBid) throws HigherBidExistenceException, InterruptedException, ClassNotFoundException,
-            IOException, AuctionEndedException {
+            AuctionBid newBid) throws Exception {
         Pair<Number640, Data> pair = null;
 
         for(int i = 0; i < 5; i++)
@@ -116,8 +126,11 @@ public class P2PAuctionBidDAO implements AuctionBidDAO {
         //we got the latest data
         if(pair != null)
         {
+            Auction lastAuction;
             int size ;
-            Auction lastAuction = (Auction) pair.element1().object();
+            if(pair.element1() != null)
+                lastAuction= (Auction) pair.element1().object();
+            else return null;
 
 
             AuctionBid lastBid = null;
@@ -139,13 +152,16 @@ public class P2PAuctionBidDAO implements AuctionBidDAO {
 
                 if(lastAuction.getStatus() != Auction.AuctionStatus.ENDED) {
 
+                    lastAuction.setParticipants(newBid.getUser().getNickname(),AuctionMechanismDAOFactory.getInstance().getPeerAddress());
+
                     // we add the new bid to the Auction.
                     lastAuction.getSlots().add(newBid);
                     if(lastAuction.getFastPrice() != null) {
-                        if (newBid.getBidValue() >= lastAuction.getFastPrice())
+                        if (newBid.getBidValue() >= lastAuction.getFastPrice()) {
                             lastAuction.setStatus(Auction.AuctionStatus.ENDED);
-                        String message = "The auction: "+lastAuction.getAuctionName()+"(id: "+lastAuction.getId()+"), is over.";
-                            AuctionMechanism.noticePeers(lastAuction,message);
+                            lastAuction.getSlots().get(lastAuction.getSlots().size()-1).setBidValue(lastAuction.getFastPrice());
+
+                        }
                     }
 
                     Data newData = new Data(lastAuction);
@@ -155,7 +171,7 @@ public class P2PAuctionBidDAO implements AuctionBidDAO {
                     //since we create a new version, we can access old version as well
                     //Creates a new key with a long for the first 64bits, and using the lower 96bits for the rest.
 
-                    return new Pair<Number160, Data>(new Number160(version,
+                    return new Pair<>(new Number160(version,
                             newData.hash()), newData);
                 }
                 else
@@ -176,7 +192,7 @@ public class P2PAuctionBidDAO implements AuctionBidDAO {
 
 
 
-    public static AuctionBidDAO getInstance(PeerDHT peerDHT){
+    static AuctionBidDAO getInstance(PeerDHT peerDHT){
 
         if(p2PAuctionBidDAO == null) {
             p2PAuctionBidDAO = new P2PAuctionBidDAO(peerDHT);

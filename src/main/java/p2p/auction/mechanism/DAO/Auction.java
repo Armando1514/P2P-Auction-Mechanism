@@ -1,22 +1,25 @@
 package p2p.auction.mechanism.DAO;
 
 import net.tomp2p.peers.PeerAddress;
+import p2p.auction.mechanism.AuctionApp;
 import p2p.auction.mechanism.Control.AuctionMechanism;
+import p2p.auction.mechanism.Control.UserMechanism;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
 
 public class Auction implements Serializable {
 
+    private static final long serialVersionUID = 1L;
+
     private Integer id;
     private User owner;
     private String auctionName;
     private Double fastPrice;
-    private HashMap<String,PeerAddress> participants;
-    private Date expirationDate;
-    private ArrayList<AuctionBid> slots;
-    private Date creationDate;
+    private HashMap < String, PeerAddress > participants;
+    private ArrayList < AuctionBid > slots;
+    private Calendar creationDate;
+    private Calendar expirationDate;
     private AuctionStatus status;
 
 
@@ -24,63 +27,61 @@ public class Auction implements Serializable {
 
     public enum AuctionStatus {
         ENDED,
-        ONGOING;
+        ONGOING
     }
 
 
-    public Auction()
-    {
-        participants = new HashMap<String, PeerAddress>();
-        this.slots = new ArrayList<AuctionBid>();
-        this.creationDate = new Date();
-        this.status=AuctionStatus.ONGOING;
+    public Auction() {
+        participants = new HashMap < > ();
+        this.slots = new ArrayList < > ();
+        TimeZone tz = TimeZone.getTimeZone(AuctionApp.getTimezone());
+        Calendar cal = Calendar.getInstance(tz);
+        cal.setTime(new Date());
+        this.creationDate = cal;
+        this.status = AuctionStatus.ONGOING;
 
     }
 
-    public Auction(User owner, String auctionName, Date expirationDate, double fastPrice)
-    {
-        this.id = id;
+    public Auction(User owner, String auctionName, Date expirationDate, double fastPrice) {
         this.owner = owner;
         this.fastPrice = fastPrice;
         this.auctionName = auctionName;
         this.setExpirationDate(expirationDate);
-        this.slots = new ArrayList<AuctionBid>();
-        this.creationDate = new Date();
-        Date currentDate = new Date();
-        participants = new HashMap<String,PeerAddress>();
+        this.slots = new ArrayList < > ();
+        TimeZone tz = TimeZone.getTimeZone(AuctionApp.getTimezone());
+        Calendar cal = Calendar.getInstance(tz);
+        cal.setTime(expirationDate);
+        this.creationDate = cal;
+        participants = new HashMap < > ();
     }
 
-    public Date getCreationDate() {
-        return creationDate;
+    public Calendar getCreationDate() {
+        TimeZone tz = TimeZone.getTimeZone(AuctionApp.getTimezone());
+        Calendar cal = Calendar.getInstance();
+        cal.setTimeZone(tz);
+        cal.setTime(this.creationDate.getTime());
+        return cal;
     }
 
 
-    public Auction updateElements(Auction newAuction)
-    {
+    Auction updateElements(Auction newAuction) {
 
         this.setAuctionName(newAuction.getAuctionName());
         this.setFastPrice(newAuction.getFastPrice());
-        if(newAuction.getStatus() == AuctionStatus.ENDED)
-        this.setStatus(newAuction.getStatus());
+        if (newAuction.getStatus() == AuctionStatus.ENDED)
+            this.setStatus(newAuction.getStatus());
 
-        if(!this.getParticipants().isEmpty())
-        {
-            if(!newAuction.getParticipants().isEmpty())
-            {
-                HashMap<String, PeerAddress> lastParticipants = this.getParticipants();
-                HashMap<String, PeerAddress> newParticipants = newAuction.getParticipants();
-                Iterator<String> it = newParticipants.keySet().iterator();
-                while (it.hasNext())
-                {
+        if (!this.getParticipants().isEmpty()) {
+            if (!newAuction.getParticipants().isEmpty()) {
+                HashMap < String, PeerAddress > lastParticipants = this.getParticipants();
+                HashMap < String, PeerAddress > newParticipants = newAuction.getParticipants();
+                for (String usersId: newParticipants.keySet()) {
 
-                    String usersId = it.next();
-                    if(!lastParticipants.containsKey(usersId))
-                        lastParticipants.put(usersId, newParticipants.get(usersId));
+                    lastParticipants.put(usersId, newParticipants.get(usersId));
 
                 }
             }
-        }
-        else {
+        } else {
             this.setParticipants(newAuction.getParticipants());
         }
 
@@ -93,9 +94,8 @@ public class Auction implements Serializable {
         return this.owner;
     }
 
-    public Auction setOwner(User owner) {
+    public void setOwner(User owner) {
         this.owner = owner;
-        return this;
     }
 
 
@@ -109,18 +109,23 @@ public class Auction implements Serializable {
         this.auctionName = auctionName;
     }
 
-    public HashMap<String, PeerAddress> getParticipants() {
+    public HashMap < String, PeerAddress > getParticipants() {
         return this.participants;
     }
 
-    public void setParticipants(String userId,PeerAddress participants) {
-        this.participants.put(userId,participants);
+    public void setParticipants(String userId, PeerAddress participants) {
+        this.participants.put(userId, participants);
     }
-    private void setParticipants(HashMap<String, PeerAddress> participants) {
+    private void setParticipants(HashMap < String, PeerAddress > participants) {
         this.participants = participants;
     }
-    public Date getExpirationDate() {
-        return this.expirationDate;
+    public Calendar getExpirationDate() {
+
+        TimeZone tz = TimeZone.getTimeZone(AuctionApp.getTimezone());
+        Calendar cal = Calendar.getInstance();
+        cal.setTimeZone(tz);
+        cal.setTime(this.expirationDate.getTime());
+        return cal;
     }
 
     public Double getFastPrice() {
@@ -128,39 +133,63 @@ public class Auction implements Serializable {
     }
 
     public void setFastPrice(Double fastPrice) {
-        if(fastPrice == null || fastPrice == -1)
+        if (fastPrice == null || fastPrice == -1)
             this.fastPrice = null;
         else
-        this.fastPrice = fastPrice;
+            this.fastPrice = fastPrice;
     }
 
-    public void setExpirationDate(Date expirationDate) {
+    public void setExpirationDate(Date date) {
 
-        this.expirationDate = expirationDate;
+        TimeZone tz = TimeZone.getTimeZone("UTC");
+        Calendar cal = Calendar.getInstance();
+        cal.setTimeZone(tz);
+        cal.setTime(date);
+        this.expirationDate = cal;
+
         checkStatus();
 
     }
-    public boolean checkStatus()
-    {
-        if(this.status == AuctionStatus.ENDED) {
+    public boolean checkStatus() {
+        if (this.status == AuctionStatus.ENDED) {
             return false;
-        }
-        else {
+        } else {
             if (this.expirationDate != null) {
                 Date currentDate = new Date();
-                if (currentDate.after(expirationDate)) {
+                TimeZone tz = TimeZone.getTimeZone(AuctionApp.getTimezone());
+                Calendar current = Calendar.getInstance(tz);
+                current.setTime(currentDate);
+                if (current.after(this.getExpirationDate())) {
 
                     this.status = AuctionStatus.ENDED;
-                    if(this.getId() != null) {
-                        String message = "- The auction: " + this.getAuctionName() + "(id: " + this.getId() + "), is over.";
+                    if (this.getId() != null) {
+                        if (!this.getSlots().isEmpty()) {
+                            String message;
 
-                        try {
-                            AuctionMechanism.noticePeers(this, message);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        } catch (ClassNotFoundException e) {
-                            e.printStackTrace();
+                            AuctionBid winnerBid = this.getSlots().get(this.getSlots().size() - 1);
+                            User user = UserMechanism.findUser(winnerBid.getUser().getNickname());
+                            double bidValue;
+                            if (this.getSlots().size() > 1)
+                                bidValue = this.getSlots().get(this.getSlots().size() - 2).getBidValue();
+                            else
+                                bidValue = winnerBid.getBidValue();
+
+                            assert user != null;
+                            message = "The auction: " + this.getAuctionName() + "(id: " + this.getId() + "), is over. The winner is: " + user.getNickname() + " , that has payed: " + bidValue + " $.";
+
+                            user.setWinnedBid(this);
+                            UserMechanism.updateUser(user);
+
+                            NotificationMessage not = new NotificationMessage();
+                            not.setBid(new AuctionBid(this, user, bidValue));
+                            not.setMessage(message);
+                            not.setType(NotificationMessage.MessageType.WIN);
+
+
+
+                            AuctionMechanism.noticePeers(not);
                         }
+
                     }
                     return false;
                 } else
@@ -176,12 +205,12 @@ public class Auction implements Serializable {
         return id;
     }
 
-    public void setId(Integer id) {
+    void setId(Integer id) {
         this.id = id;
     }
 
 
-    public ArrayList<AuctionBid> getSlots() {
+    public ArrayList < AuctionBid > getSlots() {
         return this.slots;
     }
 
@@ -190,7 +219,7 @@ public class Auction implements Serializable {
         return status;
     }
 
-    public void setStatus(AuctionStatus status) {
+    void setStatus(AuctionStatus status) {
         this.status = status;
     }
 }

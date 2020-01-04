@@ -22,6 +22,7 @@ public interface  DAOTools {
             }
             else
             {
+                assert latestData != null;
                 if(!latestKey.equals(entry.getValue().keySet().iterator().next())
                         || !latestData.equals(entry.getValue().values()
                         .iterator().next()))
@@ -31,7 +32,7 @@ public interface  DAOTools {
             }
 
         }
-        return new Pair<Number640, K>(latestKey, latestData);
+        return new Pair<>(latestKey, latestData);
     }
 
 }

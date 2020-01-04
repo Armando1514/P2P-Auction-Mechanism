@@ -7,7 +7,6 @@ import net.tomp2p.p2p.Peer;
 import net.tomp2p.p2p.PeerBuilder;
 import net.tomp2p.peers.Number160;
 import net.tomp2p.peers.PeerAddress;
-import net.tomp2p.rpc.ObjectDataReply;
 import p2p.auction.mechanism.MessageListener;
 
 import java.net.InetAddress;
@@ -20,10 +19,7 @@ public class AuctionMechanismDAOFactory implements DAOFactory{
     private static AuctionBidDAO bid = null;
     private static AuctionMechanismDAOFactory mechanism = null;
 
-    final private Peer peer;
     final  private PeerDHT peerDHT;
-    final private int DEFAULT_MASTER_PORT = 4000;
-
 
 
     // private constructor restricted to this class itself
@@ -34,7 +30,8 @@ public class AuctionMechanismDAOFactory implements DAOFactory{
            2. Sets the UDP and TCP ports to the specified value (DEFAULT_MASTER_PORT + id).
            3. Creates a peer with our parameters and starts to listen for incoming connections.
          */
-        peer = new PeerBuilder(Number160.createHash(id)).
+        int DEFAULT_MASTER_PORT = 4000;
+        Peer peer = new PeerBuilder(Number160.createHash(id)).
                 ports(DEFAULT_MASTER_PORT + id).start();
         // we start a peer DHT
         peerDHT = new PeerBuilderDHT(peer).start();
@@ -70,13 +67,7 @@ public class AuctionMechanismDAOFactory implements DAOFactory{
          * @return A new object that is the reply.
          * @throws Exception
          */
-        peer.objectDataReply(new ObjectDataReply() {
-
-            public Object reply(PeerAddress sender, Object request) throws Exception {
-
-                return listener.parseMessage(request);
-            }
-        });
+        peer.objectDataReply((sender, request) -> listener.parseMessage(request));
     }
 
     // static method to get the  Singleton class
@@ -89,7 +80,7 @@ public class AuctionMechanismDAOFactory implements DAOFactory{
     // if mode == false, we are in production mode, therefore is a singleton.
     public static AuctionMechanismDAOFactory instantiate(int id, String boot_peer, final MessageListener listener, boolean mode) throws Exception {
 
-        if(mode == true)
+        if(mode)
             mechanism = new AuctionMechanismDAOFactory(id, boot_peer, listener);
 
         if(mechanism == null) {

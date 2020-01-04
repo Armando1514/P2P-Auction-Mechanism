@@ -1,8 +1,8 @@
 package p2p.auction.mechanism.DAO;
 
-public class UsernameExistsException extends DAOException {
+class UsernameExistsException extends DAOException {
 
-    public UsernameExistsException(String message) {
+    UsernameExistsException(String message) {
 
         super(message);
     }

@@ -1,4 +1,0 @@
--------------------------------------------------------------------------------
-Test set: p2p.auction.mechanism.DAO.P2PAuctionDAOTests
--------------------------------------------------------------------------------
-Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 24.494 s - in p2p.auction.mechanism.DAO.P2PAuctionDAOTests

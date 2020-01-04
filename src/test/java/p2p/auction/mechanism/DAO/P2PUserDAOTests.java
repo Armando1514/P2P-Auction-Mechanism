@@ -1,6 +1,5 @@
 package p2p.auction.mechanism.DAO;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import p2p.auction.mechanism.MessageListener;
@@ -8,20 +7,17 @@ import p2p.auction.mechanism.MessageListener;
 import java.io.IOException;
 
 
-import java.util.HashMap;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-public class P2PUserDAOTests {
+class P2PUserDAOTests {
     private static final int NUMBER_OF_PEERS = 5;
 
     private static UserDAO[] peers;
 
     private static CountDownLatch c3 = new CountDownLatch(NUMBER_OF_PEERS);
-    private static CountDownLatch c4 = new CountDownLatch(NUMBER_OF_PEERS);
 
 
     @BeforeAll
@@ -29,9 +25,9 @@ public class P2PUserDAOTests {
         peers = new UserDAO[NUMBER_OF_PEERS];
 
         class MessageListenerImpl implements MessageListener {
-            int peerid;
+            private int peerid;
 
-            public MessageListenerImpl(int peerid) {
+            private MessageListenerImpl(int peerid) {
                 this.peerid = peerid;
             }
 
@@ -53,16 +49,16 @@ public class P2PUserDAOTests {
             }
 
         } catch (IOException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
+
         }
     }
 
     //check if all the user  created in parallel from different peers are without duplication.
     @Test
-    protected void testCreate() throws Exception {
+    void testCreate() throws Exception {
 
-        String userSaved[] = new String[NUMBER_OF_PEERS];
+        String[] userSaved = new String[NUMBER_OF_PEERS];
 
         int i = 0;
         while (i < NUMBER_OF_PEERS) {
@@ -70,23 +66,20 @@ public class P2PUserDAOTests {
             int duplicateN = i % (NUMBER_OF_PEERS / 2);
             userSaved[i] = "user" + duplicateN;
 
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
+            new Thread(() -> {
 
-                    Random random = new Random();
+                Random random = new Random();
 
-                    int rnd = random.ints(1, (NUMBER_OF_PEERS)).findFirst().getAsInt();
-                    User user = new User("user" + duplicateN, "password", new Double(1), null);
-                    try {
-                        peers[rnd].create(user);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-
-                    c3.countDown();
-
+                int rnd = random.ints(1, (NUMBER_OF_PEERS)).findFirst().getAsInt();
+                User user = new User("user" + duplicateN, "password");
+                try {
+                    peers[rnd].create(user);
+                } catch (Exception e) {
+                    System.out.println("controlled exception " + e.getMessage());
                 }
+
+                c3.countDown();
+
             }).start();
 
             i++;

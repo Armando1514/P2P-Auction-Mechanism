@@ -13,15 +13,15 @@ import java.io.IOException;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;
 
-public class UserControlTests {
+class UserControlTests {
 
 
     @BeforeAll
     static void initPeer() throws Exception {
         class MessageListenerImpl implements MessageListener {
-            int peerid;
+            private int peerid;
 
-            public MessageListenerImpl(int peerid) {
+            private MessageListenerImpl(int peerid) {
                 this.peerid = peerid;
             }
 
@@ -37,14 +37,12 @@ public class UserControlTests {
 
 
         } catch (IOException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
     }
 
     @Test
-    public void storeUserTest()
-    {
+    void storeUserTest() {
         User x = new User();
         x.setNickname("storeUser");
         UserMechanism.storeUser(x);
@@ -52,15 +50,14 @@ public class UserControlTests {
     }
 
     @Test
-    public void updateUserTest()
-    {
+    void updateUserTest() {
         User x = new User();
         x.setNickname("storeUser");
-        x.setMoney(new Double(4));
+        x.setPassword("ola");
         UserMechanism.storeUser(x);
-        x.setMoney(new Double(5));
+        x.setPassword("ina");
         UserMechanism.updateUser(x);
-        assertEquals(UserMechanism.findUser("storeUser").getMoney(),new Double(5));
+        assertEquals(UserMechanism.findUser("storeUser").getPassword(), "ina");
     }
 
 

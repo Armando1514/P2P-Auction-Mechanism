@@ -1,39 +1,34 @@
 package p2p.auction.mechanism.GUI;
 import org.beryx.textio.*;
 
-import javax.swing.*;
 
+import p2p.auction.mechanism.AuctionApp;
 import p2p.auction.mechanism.Control.UserMechanism;
 import p2p.auction.mechanism.DAO.User;
 
-import java.io.IOException;
 
 public class AuthenticationGUI {
 
 
-
-    private TextTerminal<?> terminal ;
+    private TextTerminal < ? > terminal;
     private TextIO textIO;
     private User userSaved;
     private String keyStrokeLogin = "ctrl L";
     private String keyStrokeRegister = "ctrl R";
     static final String keyStrokeQuit = "ctrl Q";
-
-public   AuthenticationGUI(TextIO textIO, TextTerminal<?> terminal)
-{
-    this.textIO = textIO;
-    this.terminal =  terminal;
-}
+    private boolean authenticationDisableStrokes = false;
 
 
-    public User authenticationGUIDisplay() {
+    public AuthenticationGUI(TextIO textIO, TextTerminal < ? > terminal) {
+        this.textIO = textIO;
+        this.terminal = terminal;
+    }
+
+
+    public void authenticationGUIDisplay() {
 
 
 
-
-        final boolean[] authenticationDisableStrokes = {false};
-
-        TerminalProperties<?> props = terminal.getProperties();
 
         boolean quitStroke = terminal.registerHandler(keyStrokeQuit, t -> {
             this.quitGUI();
@@ -41,88 +36,90 @@ public   AuthenticationGUI(TextIO textIO, TextTerminal<?> terminal)
         });
 
         boolean registerStroke = terminal.registerHandler(keyStrokeRegister, t -> {
-            if(!terminal.resetToBookmark("authentication")) {
-                System.out.print("\033[H\033[2J");
-                System.out.flush();
-                this.printMenu();
-            }
-            if (!authenticationDisableStrokes[0]){
+            if (!authenticationDisableStrokes) {
+                if (!terminal.resetToBookmark("authentication")) {
+                    System.out.print("\033[H\033[2J");
+                    System.out.flush();
+                    this.printMenu();
+                }
                 userSaved = this.registerGUI();
-            if (userSaved != null) {
-                authenticationDisableStrokes[0] = true;
-                UserMechanism.changeUserAddress(userSaved);
-                return new ReadHandlerData(ReadInterruptionStrategy.Action.ABORT).withRedrawRequired(true);
+                if (userSaved != null) {
+                    this.authenticationConfirmed();
+                    return new ReadHandlerData(ReadInterruptionStrategy.Action.RETURN).withRedrawRequired(true);
 
+                } else
+                    terminal.println("A strange error occurs, try after.");
             } else
-                terminal.println("A strange error occurs, try after.");
-        }
-        else {
                 terminal.println("You are not in the login session, command not allowed here.");
-            }
 
             return new ReadHandlerData(ReadInterruptionStrategy.Action.RESTART).withRedrawRequired(true);
 
         });
         boolean loginStroke = terminal.registerHandler(keyStrokeLogin, t -> {
-            if(!terminal.resetToBookmark("authentication")) {
-                System.out.print("\033[H\033[2J");
-                System.out.flush();
-                this.printMenu();
-            }
-            if (!authenticationDisableStrokes[0]){
+            if (!authenticationDisableStrokes) {
+                if (!terminal.resetToBookmark("authentication")) {
+                    System.out.print("\033[H\033[2J");
+                    System.out.flush();
+                    this.printMenu();
+                }
+
                 userSaved = this.loginGUI();
                 if (userSaved != null) {
-                    authenticationDisableStrokes[0] = true;
-                    UserMechanism.changeUserAddress(userSaved);
-
-                    return new ReadHandlerData(ReadInterruptionStrategy.Action.ABORT).withRedrawRequired(true);
+                    this.authenticationConfirmed();
+                    return new ReadHandlerData(ReadInterruptionStrategy.Action.RETURN).withRedrawRequired(true);
 
                 } else
                     terminal.println("A strange error occurs, try after.");
-            }
-            else {
-
+            } else
                 terminal.println("You are not in the login session, command not allowed here.");
 
-            }
             return new ReadHandlerData(ReadInterruptionStrategy.Action.RESTART).withRedrawRequired(true);
         });
 
 
-        boolean hasHandlers = loginStroke || registerStroke || quitStroke ;
-        if(!hasHandlers) {
+        boolean hasHandlers = loginStroke || registerStroke || quitStroke;
+        if (!hasHandlers) {
             terminal.println("No handlers can be registered.");
         } else {
-            props.setPromptBold(true);
-            props.setPromptColor("cyan");
-            terminal.println("WELCOME TO THE AUCTION SYSTEM");
-            props.setPromptUnderline(true);
-            props.setPromptColor("red");
-            terminal.println("YOU NEED TO PROVIDE AN AUTHENTICATION.");
-            props.setPromptColor("#00ff00");
-            props.setPromptUnderline(false);
-            props.setPromptBold(false);
+
+            System.out.print("\033[H\033[2J");
+            System.out.flush();
             this.printMenu();
             terminal.setBookmark("authentication");
 
         }
 
-try {
-    textIO.newStringInputReader().withPattern("(?i)(?<= |^)exit(?= |$)").read("\nWrite 'exit' to terminate...");
-}
-catch (ReadAbortedException e)
-{
-    return userSaved;
-}
-        this.quitGUI();
-
-        textIO.dispose();
-        return null;
+        textIO.newStringInputReader().withPattern("(?=a)b").read("\nWaiting a command...");
 
     }
 
-    private void printMenu()
-    {
+
+    private void authenticationConfirmed() {
+
+
+        this.authenticationDisableStrokes = true;
+        UserMechanism.changeUserAddress(userSaved);
+        if (!terminal.resetToBookmark("reset")) {
+            System.out.print("\033[H\033[2J");
+            System.out.flush();
+        }
+        new AuctionGUI(textIO, terminal, userSaved).AuctionGUIDisplay();
+
+    }
+
+
+    private void printMenu() {
+        TerminalProperties < ? > props = terminal.getProperties();
+
+        props.setPromptBold(true);
+        props.setPromptColor("cyan");
+        terminal.println("WELCOME TO THE AUCTION SYSTEM, TIMEZONE PROVIDED: " + AuctionApp.getTimezone());
+        props.setPromptUnderline(true);
+        props.setPromptColor("red");
+        terminal.println("YOU NEED TO PROVIDE AN AUTHENTICATION.");
+        props.setPromptColor("#00ff00");
+        props.setPromptUnderline(false);
+        props.setPromptBold(false);
         terminal.println("--------------------------------------------------------------------------------");
 
 
@@ -138,10 +135,11 @@ catch (ReadAbortedException e)
 
     }
 
-    private User registerGUI()
-    {
+
+
+    private User registerGUI() {
         terminal.resetLine();
-        TerminalProperties<?> props = terminal.getProperties();
+        TerminalProperties < ? > props = terminal.getProperties();
         props.setPromptColor("red");
         terminal.moveToLineStart();
 
@@ -150,13 +148,13 @@ catch (ReadAbortedException e)
 
         boolean nickRight = false;
         User user = new User();
-        while(!nickRight) {
+        while (!nickRight) {
             String nickname = textIO.newStringInputReader()
                     .withMinLength(4).withPattern("^(?![0-9]*$)[a-zA-Z0-9]+$")
                     .read("Username");
             user.setNickname(nickname.toLowerCase());
             nickRight = UserMechanism.storeUser(user);
-            if(!nickRight)
+            if (!nickRight)
                 terminal.println("Username already exists, change it!");
 
         }
@@ -167,46 +165,39 @@ catch (ReadAbortedException e)
         terminal.println();
         user.setPassword(password);
 
-        double money = textIO.newDoubleInputReader()
-                .withMinVal(new Double(1))
-                .read("Initial money");
-        user.setMoney(new Double(money));
-        if(UserMechanism.updateUser(user)) {
+        if (UserMechanism.updateUser(user)) {
             terminal.println("User correctly created.");
             return user;
-        }
-        else
+        } else
             return null;
     }
 
-    private User loginGUI()
-    {
+    private User loginGUI() {
         terminal.resetLine();
-        TerminalProperties<?> props = terminal.getProperties();
+        TerminalProperties < ? > props = terminal.getProperties();
         props.setPromptColor("red");
         terminal.moveToLineStart();
 
         terminal.println("LOGIN:");
         props.setPromptColor("#00ff00");
         boolean nickRight = false;
-        User user = new User() ;
+        User user = new User();
 
-        while(!nickRight) {
+        while (!nickRight) {
             String nickname = textIO.newStringInputReader()
                     .withMinLength(4).withPattern("^(?![0-9]*$)[a-zA-Z0-9]+$")
                     .read("Username");
             user = UserMechanism.findUser(nickname.toLowerCase());
-            if(user == null)
+            if (user == null)
                 terminal.println("There is no user with this nickname, if you want to register press CTRL R.");
-            else
-            {
+            else {
                 nickRight = true;
             }
         }
 
         boolean passwordRight = false;
 
-        while(!passwordRight) {
+        while (!passwordRight) {
             String password = textIO.newStringInputReader()
                     .withMinLength(6)
                     .withInputMasking(true)
@@ -220,12 +211,10 @@ catch (ReadAbortedException e)
         return user;
     }
 
-    private void quitGUI()
-    {
+    private void quitGUI() {
 
-            System.exit(0);
-
-    }
+        System.exit(0);
 
     }
 
+}
