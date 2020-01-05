@@ -6,6 +6,7 @@ import org.beryx.textio.TextIoFactory;
 import org.beryx.textio.TextTerminal;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
+import p2p.auction.mechanism.Control.MessageListenerImpl;
 import p2p.auction.mechanism.DAO.AuctionMechanismDAOFactory;
 
 import p2p.auction.mechanism.DAO.NotificationMessage;
@@ -29,30 +30,6 @@ public class AuctionApp {
 
 
 
-        class MessageListenerImpl implements MessageListener {
-
-
-            public Object parseMessage(Object obj) {
-
-                TextIO textIO = TextIoFactory.getTextIO();
-                TextTerminal terminal = textIO.getTextTerminal();
-                TerminalProperties < ? > props = terminal.getProperties();
-                props.setPromptColor("yellow");
-                props.setPromptBold(true);
-                props.setPromptUnderline(true);
-                NotificationMessage not = (NotificationMessage) obj;
-                terminal.println("\nNew notification ~ " + not.getMessage() + "\n");
-
-                if ((not.getType() == NotificationMessage.MessageType.WIN) && not.getBid().getUser().getNickname().equals(AuctionGUI.getUser().getNickname()))
-                    AuctionGUI.updateAuctionWon(not);
-
-                props.setPromptBold(false);
-                props.setPromptUnderline(false);
-                props.setPromptColor("#00ff00");
-                return "success";
-            }
-
-        }
 
         AuctionApp example = new AuctionApp();
         final CmdLineParser parser = new CmdLineParser(example);

@@ -22,7 +22,7 @@ public class P2PAuctionDAO implements AuctionDAO {
         this.peerDHT = peerDHT;
     }
 
-    private static final Random RND = new Random(42 L);
+    private static final Random RND = new Random(42L);
 
 
 
@@ -175,8 +175,7 @@ public class P2PAuctionDAO implements AuctionDAO {
         }
         if (pair2 != null && pair2.element1() == 1) {
 
-            FuturePut fp;
-            fp = peerDHT.put(Number160.createHash("auctionVersioningNumber"))
+             peerDHT.put(Number160.createHash("auctionVersioningNumber"))
                     .versionKey(pair2.element0().versionKey()).putConfirm()
                     .data(new Data()).start().awaitUninterruptibly();
         } else {
@@ -203,7 +202,7 @@ public class P2PAuctionDAO implements AuctionDAO {
         if (pair != null) {
             // update operation is append
             HashSet < Integer > freeElements = (HashSet < Integer > ) pair.element1().object();
-            if (mode == true)
+            if (mode)
                 freeElements.add(id);
             else
                 //remove mode
@@ -251,7 +250,6 @@ public class P2PAuctionDAO implements AuctionDAO {
         }
         if (pair2 != null && pair2.element1() == 1) {
 
-            HashMap < Integer, Auction > hash = (HashMap < Integer, Auction > ) pair.element1().object();
 
             peerDHT.put(Number160.createHash("getAll"))
                     .versionKey(pair2.element0().versionKey()).putConfirm()
@@ -283,7 +281,7 @@ public class P2PAuctionDAO implements AuctionDAO {
 
             HashMap < Integer, Auction > hash = (HashMap < Integer, Auction > ) pair.element1().object();
             if (hash != null) {
-                if (mode == true)
+                if (mode)
                     hash.put(auction.getId(), auction);
                     //remove mode
                 else

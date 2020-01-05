@@ -170,7 +170,7 @@ public class AuctionGUI {
         this.showUnreadedMessageWarning();
         terminal.println("--------------------------------------------------------------------------------");
         terminal.println("Press " + keyStrokeCheckUserStatus + " to check your user status.");
-        terminal.println("Press " + keyStrokeReadUnreadedMessage + " to read your unreaded messages");
+        terminal.println("Press " + keyStrokeReadUnreadedMessage + " to read your unread messages");
         terminal.println("Press " + keyStrokeCreateAuction + " to create an auction.");
         terminal.println("Press " + keyStrokeListAuctions + " for the list of auctions.");
         terminal.println("Press " + keyStrokeViewAuction + " to view an auction.");
@@ -186,7 +186,7 @@ public class AuctionGUI {
         if (!user.getUnreadedMessages().isEmpty()) {
             TerminalProperties < ? > props = terminal.getProperties();
             props.setPromptColor("red");
-            terminal.println("You have: " + user.getUnreadedMessages().size() + " messages unreaded, press Ctrl U for read them.");
+            terminal.println("You have: " + user.getUnreadedMessages().size() + " messages unread, press Ctrl U for read them.");
             props.setPromptColor("#00ff00");
         }
     }
@@ -195,7 +195,7 @@ public class AuctionGUI {
         props.setPromptColor("red");
         terminal.resetLine();
 
-        terminal.println("UNREADED MESSAGES:");
+        terminal.println("UNREAD MESSAGES:");
         props.setPromptColor("cyan");
 
         ArrayList < String > unreadedMessages = user.getUnreadedMessages();
@@ -209,7 +209,7 @@ public class AuctionGUI {
             user.setUnreadedMessages(new ArrayList < > ());
             UserMechanism.updateUser(user);
         } else
-            terminal.println("No messages unreaded");
+            terminal.println("No messages unread");
 
         props.setPromptColor("#00ff00");
 
@@ -299,7 +299,7 @@ public class AuctionGUI {
             } else {
                 if (auction.getFastPrice() != null)
                     terminal.println("If you want get the product without competing. Get it faster, place a bid of: " + auction.getFastPrice());
-                Double bidValue = textIO.newDoubleInputReader().withMinVal(1 d).
+                Double bidValue = textIO.newDoubleInputReader().withMinVal(1d).
                         read("Bid value");
                 AuctionBid bid = new AuctionBid(auction, user, bidValue);
                 try {
