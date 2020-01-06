@@ -1,6 +1,6 @@
 FROM alpine/git
 WORKDIR /app
-RUN git clone https://github.com/Armando1514/tests.git
+RUN git clone https://github.com/Armando1514/P2P-Auction-Mechanism.git
 
 FROM maven:3.5-jdk-8-alpine
 WORKDIR /app

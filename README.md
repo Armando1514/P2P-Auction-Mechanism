@@ -1,6 +1,8 @@
 # P2P AUCTION SYSTEM
 
-![auction logo](http://ferrara.link/img/p2pAuctionMechanism2020/logo.jpg)
+<p align="center">
+  <img src="http://ferrara.link/img/p2pAuctionMechanism2020/logo.jpg">
+</p>
 
 An auctions system based on P2P Network in which each peer can sell and buy goods using a Second-Price Auction mechanism (like E-Bay).
 
@@ -31,11 +33,23 @@ An auctions system based on P2P Network in which each peer can sell and buy good
 
 The project structure is relying on the architectural pattern [model-view-controller (MVC)](https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93controller)
 
-![mvc](http://ferrara.link/img/p2pAuctionMechanism2020/mvc.png)
+<p align="center">
+  <img src="http://ferrara.link/img/p2pAuctionMechanism2020/mvc.png">
+</p>
 
 ### Model
 
-The 'model' directly manages the data, in our case communicate with the [overlay network](https://en.wikipedia.org/wiki/Overlay_network) through the [DHT](https://en.wikipedia.org/wiki/Distributed_hash_table). To design this component it has been adopted the structural pattern  "[**Data Access Object** (DAO)](https://www.oracle.com/technetwork/java/dataaccessobject-138824.html)" and the design patterns "[**factory**](https://www.tutorialspoint.com/design_pattern/factory_pattern.htm)" and "[**singleton**](https://www.tutorialspoint.com/design_pattern/singleton_pattern.htm)".    ![MODEL](http://ferrara.link/img/p2pAuctionMechanism2020/DAO.jpg)            
+The 'model' directly manages the data, in our case communicate with the [overlay network](https://en.wikipedia.org/wiki/Overlay_network) through the [DHT](https://en.wikipedia.org/wiki/Distributed_hash_table). To design this component it has been adopted the structural pattern  "[**Data Access Object** (DAO)](https://www.oracle.com/technetwork/java/dataaccessobject-138824.html)" and the design patterns "[**factory**](https://www.tutorialspoint.com/design_pattern/factory_pattern.htm)" and "[**singleton**](https://www.tutorialspoint.com/design_pattern/singleton_pattern.htm)".    
+
+
+
+<p align="center">
+  <img src="http://ferrara.link/img/p2pAuctionMechanism2020/DAO.jpg">
+</p>
+
+
+
+​            
 
 ### Controller 
 
@@ -66,14 +80,22 @@ As shown in the following [report](http://ferrara.link/img/p2pAuctionMechanism20
 
 1. Install '[Docker](https://docs.docker.com/install/)'.
 
-2. Clone the project on your desktop.
+2. Clone the project on your desktop 
 
-3. Open the terminal and go to the folder where you have cloned the project with it.
+   ```
+   git clone https://github.com/Armando1514/P2P-Auction-Mechanism.git
+   ```
+
+3. Open the terminal and go to the folder where you have cloned the project with it 
+
+   ```
+   cd P2P-Auction-Mechanism
+   ```
 
 4. Build your Docker container typing: 
 
    ```
-   docker build --no-cache -t p2p-pp-client.
+   docker build --no-cache -t p2p-pp-client .
    ```
 
     
@@ -117,6 +139,8 @@ Now you can start your peers changing the unique peer id and the peer name:
 ```
 docker run -i -t --name PEERNAME -e MASTERIP="Master container ID" -e ID=1 p2p-pp-client
 ```
+
+The same speech as before for the timezone.
 
 # Credits
 
