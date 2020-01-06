@@ -53,7 +53,8 @@ public class AuctionApp {
     }
 
     public static String getTimezone() {
-
+        if(timezone == null)
+            timezone ="Europe/Rome";
         return timezone;
     }
 }

@@ -71,10 +71,10 @@ public class P2PAuctionDAO implements AuctionDAO {
         FutureGet futureGet = this.peerDHT.get(Number160.createHash("auctionVersioningNumber")).getLatest().start();
         futureGet.awaitUninterruptibly();
         FuturePut p;
-        int value = 0;
+        int value ;
         boolean inserted = false;
         Iterator < Integer > iterator = null;
-        HashSet < Integer > freeElements = new HashSet < Integer > ();
+        HashSet < Integer > freeElements = new HashSet<>();
         if (this.readAll() == null) {
 
             HashMap < Integer, Auction > x = new HashMap < > ();
@@ -117,6 +117,7 @@ public class P2PAuctionDAO implements AuctionDAO {
 
         while (!inserted) {
 
+            assert iterator != null;
             if (!iterator.hasNext()) {
                 value = this.readAll().size() + RND.nextInt(500);
                 futureGet = this.peerDHT.get(Number160.createHash("auctionVersioningNumber")).getLatest().start().awaitUninterruptibly();
@@ -150,7 +151,7 @@ public class P2PAuctionDAO implements AuctionDAO {
     private void updateVersioningNumber(Integer id, boolean mode) throws Exception {
 
         Pair < Number640, Byte > pair2 = null;
-        Pair < Number160, Data > pair = null;
+        Pair < Number160, Data > pair;
         for (int i = 0; i < 50; i++) {
             pair = getAndUpdateVersioningNumber(id, mode);
 
@@ -213,7 +214,7 @@ public class P2PAuctionDAO implements AuctionDAO {
             long version = v.timestamp() + 1;
             newData.addBasedOn(v);
             //since we create a new version, we can access old versions as well
-            return new Pair < Number160, Data > (new Number160(version,
+            return new Pair<>(new Number160(version,
                     newData.hash()), newData);
         }
 
@@ -224,7 +225,7 @@ public class P2PAuctionDAO implements AuctionDAO {
     public void updateGetAll(Auction auction, boolean mode) throws Exception {
 
         Pair < Number640, Byte > pair2 = null;
-        Pair < Number160, Data > pair = null;
+        Pair < Number160, Data > pair;
         for (int i = 0; i < 50; i++) {
             pair = getAndUpdateGetAll(auction, mode);
 
@@ -292,7 +293,7 @@ public class P2PAuctionDAO implements AuctionDAO {
                 long version = v.timestamp() + 1;
                 newData.addBasedOn(v);
                 //since we create a new version, we can access old versions as well
-                return new Pair < Number160, Data > (new Number160(version,
+                return new Pair<>(new Number160(version,
                         newData.hash()), newData);
             }
         }
@@ -386,7 +387,7 @@ public class P2PAuctionDAO implements AuctionDAO {
             //since we create a new version, we can access old version as well
             //Creates a new key with a long for the first 64bits, and using the lower 96bits for the rest.
 
-            return new Pair < Number160, Data > (new Number160(version,
+            return new Pair<>(new Number160(version,
                     newData.hash()), newData);
         }
 
