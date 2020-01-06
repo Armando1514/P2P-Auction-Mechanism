@@ -4,7 +4,7 @@ RUN git clone https://github.com/Armando1514/P2P-Auction-Mechanism.git
 
 FROM maven:3.5-jdk-8-alpine
 WORKDIR /app
-COPY --from=0 /app/tests /app
+COPY --from=0 /app/P2P-Auction-Mechanism /app
 RUN mvn package
 
 FROM openjdk:8-jre-alpine

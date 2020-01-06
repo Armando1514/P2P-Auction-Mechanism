@@ -74,7 +74,9 @@ The solution has been tested with 20 peers executing the same operation in paral
 ## Test cases
 
 The attention of the test cases has been placed on the folder on which the whole system is based, that is "DAO" since it communicates with the "DHT".
-As shown in the following [report](http://ferrara.link/img/p2pAuctionMechanism2020/tests.jpg), we have 80% line coverage for the "DAO" package. Currently, the test cases instantiate 5 peers, however, you can change the variable 'NUMBER_OF_PEERS' for more, paying attention to not instantiate too many connections triggering the DDOS protection. For operations on critical resources, several peers were started in parallel ( until a maximum of 20 peers) for testing the previous consensus algorithm. A little attention has also been given to the "control" package, carrying out tests on basic operations.
+As shown in the following [report](http://ferrara.link/img/p2pAuctionMechanism2020/tests.jpg), is achieved an 80% line coverage for the "DAO" package. Currently, the test cases instantiate 5 peers, however, you can change the variable 'NUMBER_OF_PEERS' for more, paying attention to not instantiate too many connections triggering the DDOS protection. For operations on critical resources, several peers were started in parallel ( until a maximum of 20 peers) for testing the previous consensus algorithm. 
+
+A little attention has also been given to the "control" package, carrying out tests on the basic operations.
 
 ## HOW TO RUN
 
