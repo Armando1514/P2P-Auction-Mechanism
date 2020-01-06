@@ -27,6 +27,13 @@ An auctions system based on P2P Network in which each peer can sell and buy good
 - Multi-address support:  when a user logs in, all the addresses in the auctions in which he participates are changed with his new address. Thus, the user can still receive notifications even if he logs in from a different peer.
 - Resource contention support: a distributed algorithm has been implemented to allow peers accessing the same resource at the same time without overwriting the other's changes (explained below).
 
+## DEMO VIDEO
+
+<p align="center">
+    <a href="http://ferrara.link/img/p2pAuctionMechanism2020/video-p2p-auction.mp4"><img src="http://ferrara.link/img/p2pAuctionMechanism2020/video.png"></a></p>
+
+
+
 ## DESIGN CHOICES
 
 ## Architecture
