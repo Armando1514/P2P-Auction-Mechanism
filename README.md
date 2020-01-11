@@ -13,19 +13,19 @@ An auctions system based on P2P Network in which each peer can sell and buy good
 - Registration: to create a new user.
 - Login in: possibility to log in from different peers and different sessions without losing persistence.
 - User status: monitor your user status, including the auctions won, auctions joined or the own auctions.
-- Create auction:  fill out a form to open a new auction in the network where all the peers can compete.
+- Create auction:  fill out a form to open a new auction in the network, where all the peers can compete.
 - Skip the line: for each auction is possible to add a fast price, where one peer can buy the goods without compete.
 - Place a bid: the peers can bid to race in the auction.
 - Check the auction:  view the auction status.
 - Check All: list all the auction in the system.
-- Notification: receive a notification message every time a user places a bid in the auction you are playing in or when it has ended.
+- Notification: receive a notification message every time a user places a bid in the auction you are playing in or when the auction has ended.
 - Unread notification: If you are offline, the notifications will be saved and you will be able to read them the next time you log in.
 
 ### Technical features
 
 - Timezone support:  the moment when the auction takes place is common all over the world. For doing that there is a conversion from the '[UTC](https://en.wikipedia.org/wiki/Coordinated_Universal_Time)' timezone to the user time zone.
 - Multi-address support:  when a user logs in, all the addresses in the auctions in which he participates are changed with his new address. Thus, the user can still receive notifications even if he logs in from a different peer.
-- Resource contention support: a distributed algorithm has been implemented to allow peers accessing the same resource at the same time without overwriting the other's changes (explained below).
+- Resource contention support: a distributed algorithm has been implemented to allow peers to access and edit the same resource at the same time without overwriting the other's changes (explained below).
 
 ## DEMO VIDEO
 
@@ -60,7 +60,7 @@ The 'model' directly manages the data, in our case communicate with the [overlay
 
 ### Controller 
 
-The controller responds to the user input and performs interactions on the data model objects.  Beyond that has been implemented the messaging pattern "[**publish-subscribe**](https://en.wikipedia.org/wiki/Publish%E2%80%93subscribe_pattern)", where the topic is the auction and each peer that competes is the subscriber. When a peer places a bid or discovers that the auction is ended, it becomes a publisher and sends to all a notification.
+The controller responds to the user input and performs interactions on the data model objects.  Beyond that has been implemented the messaging pattern "[**publish-subscribe**](https://en.wikipedia.org/wiki/Publish%E2%80%93subscribe_pattern)", where the topic is the auction and each peer that competes in it, is the subscriber. When a peer places a bid or discovers that the auction is ended, it becomes a publisher and sends to all a notification.
 
  ![controller](http://ferrara.link/img/p2pAuctionMechanism2020/control.jpg)                       
 
