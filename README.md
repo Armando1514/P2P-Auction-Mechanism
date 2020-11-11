@@ -2,6 +2,7 @@
 
 <p align="center">
   <img src="http://ferrara.link/img/p2pAuctionMechanism2020/logo.jpg">
+  
 </p>
 
 An auctions system based on P2P Network in which each peer can sell and buy goods using a Second-Price Auction mechanism (like E-Bay).
