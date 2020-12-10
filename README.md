@@ -1,7 +1,7 @@
 # P2P AUCTION SYSTEM
 
 <p align="center">
-  <img src="http://ferrara.link/img/p2pAuctionMechanism2020/logo.jpg">
+  <img src="./doc/auction-logo.jpg">
   
 </p>
 
@@ -31,7 +31,7 @@ An auctions system based on P2P Network in which each peer can sell and buy good
 ## DEMO VIDEO
 
 <p align="center">
-    <a href="http://ferrara.link/img/p2pAuctionMechanism2020/video-p2p-auction.mp4"><img src="http://ferrara.link/img/p2pAuctionMechanism2020/video.png"></a></p>
+    <a href="http://ferrara.link/img/p2pAuctionMechanism2020/video-p2p-auction.mp4"><img src="./doc/video-button.png"></a></p>
 
 
 
@@ -42,7 +42,7 @@ An auctions system based on P2P Network in which each peer can sell and buy good
 The project structure is relying on the architectural pattern [model-view-controller (MVC)](https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93controller)
 
 <p align="center">
-  <img src="http://ferrara.link/img/p2pAuctionMechanism2020/mvc.png">
+  <img src="./doc/mvc-model.png">
 </p>
 
 ### Model
@@ -52,7 +52,7 @@ The 'model' directly manages the data, in our case communicate with the [overlay
 
 
 <p align="center">
-  <img src="http://ferrara.link/img/p2pAuctionMechanism2020/DAO.jpg">
+  <img src="./doc/dao-model.jpg">
 </p>
 
 
@@ -63,7 +63,7 @@ The 'model' directly manages the data, in our case communicate with the [overlay
 
 The controller responds to the user input and performs interactions on the data model objects.  Beyond that has been implemented the messaging pattern "[**publish-subscribe**](https://en.wikipedia.org/wiki/Publish%E2%80%93subscribe_pattern)", where the topic is the auction and each peer that competes in it, is the subscriber. When a peer places a bid or discovers that the auction is ended, it becomes a publisher and sends to all a notification.
 
- ![controller](http://ferrara.link/img/p2pAuctionMechanism2020/control.jpg)                       
+ ![controller](./doc/interfaces.jpg)                       
 
 ### View
 
